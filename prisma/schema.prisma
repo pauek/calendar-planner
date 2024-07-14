@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model SemesterType {
+  type      String     @id @unique
+  semesters Semester[]
+}
+
+model Semester {
+  year     Int
+  semester String
+  type     SemesterType @relation(fields: [semester], references: [type])
+
+  holidays Holiday[]
+  Group    Group[]
+
+  @@id([year, semester])
+}
+
+model Holiday {
+  id   Int      @id @default(autoincrement())
+  date DateTime @unique
+
+  semester_ Semester @relation(fields: [year, semester], references: [year, semester])
+  year      Int
+  semester  String
+}
+
+model Group {
+  id    Int    @id @default(autoincrement())
+  group String
+
+  semester_ Semester @relation(fields: [year, semester], references: [year, semester])
+  year      Int
+  semester  String
+
+  slots WeeklySlot[]
+
+  @@unique([year, semester, group])
+}
+
+model WeeklySlot {
+  id       Int      @id @default(autoincrement())
+  year     Int
+  semester String
+  start    DateTime
+  end      DateTime
+
+  group   Group @relation(fields: [groupId], references: [id])
+  groupId Int
+}
