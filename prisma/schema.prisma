@@ -33,24 +33,22 @@ model Holiday {
 }
 
 model Group {
-  id    Int    @id @default(autoincrement())
-  group String
-
-  semester_ Semester @relation(fields: [year, semester], references: [year, semester])
+  id        Int          @id @default(autoincrement())
+  group     String
   year      Int
   semester  String
-
-  slots WeeklySlot[]
+  semester_ Semester     @relation(fields: [year, semester], references: [year, semester])
+  slots     WeeklySlot[]
 
   @@unique([year, semester, group])
 }
 
 model WeeklySlot {
-  id       Int      @id @default(autoincrement())
-  year     Int
-  semester String
-  start    DateTime
-  end      DateTime
+  id          Int    @id @default(autoincrement())
+  weekDay     Int
+  startHour   Int
+  endHour     Int
+  lab         Boolean
 
   group   Group @relation(fields: [groupId], references: [id])
   groupId Int

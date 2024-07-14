@@ -78,14 +78,20 @@ h3 {
   @apply font-bold text-lg mb-2;
 }
 
-.timetable td {
+.slot {
+  @apply flex flex-col items-center justify-center;
+}
+.timetable td, .slot {
   @apply h-[2em] 
 }
 .timetable th {
   @apply border-none
 }
 .timetable td:not(:first-child) {
-  @apply border w-[10em];
+  @apply border;
+}
+.timetable td:not(:first-child), .slot {
+  @apply w-[10em]
 }
 .timetable td.hour div {
   @apply relative -bottom-[1.3em] text-xs text-right;

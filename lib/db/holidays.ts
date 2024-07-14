@@ -1,8 +1,18 @@
-import { dateonly, DateOnly, dateOnly2date, getSemester, Semester } from "@/lib/dates";
+import {
+  date2altdate,
+  AltDate,
+  altdate2date,
+  getSemester,
+  Semester,
+  SemesterMonth,
+  yearMonth,
+} from "@/lib/dates";
 import { db } from "@/lib/db/db";
+import { semester, year } from "../config";
 
 export const dbGetHolidaysForYear = async (year: number, semester: Semester) => {
-  return await db.holiday.findMany({ where: { year, semester } });
+  const result = await db.holiday.findMany({ where: { year, semester } });
+  return result.map((d) => date2altdate(d.date));
 };
 
 export const dbGetHolidaysForMonth = async (
@@ -10,38 +20,25 @@ export const dbGetHolidaysForMonth = async (
   semester: Semester,
   month: number
 ) => {
-  const result = await db.holiday.findMany({
-    where: {
-      year,
-      semester,
-      date: {
-        gte: new Date(Date.UTC(year, month - 1, 1)),
-        lt: new Date(Date.UTC(year, month, 1)),
-      },
-    },
-  });
-  return result.map((d) => dateonly(d.date));
+  return (await dbGetHolidaysForYear(year, semester)).filter((d) => d.month === month);
 };
 
-export const dbAddHoliday = async (d: DateOnly) => {
+export const dbAddHoliday = async (d: AltDate) => {
   await db.holiday.create({
     data: {
-      date: dateOnly2date(d),
+      date: altdate2date(d),
       year: d.year,
       semester: getSemester(d),
     },
   });
 };
 
-export const dbToggleHoliday = async (d: DateOnly) => {
-  const date = dateOnly2date(d);
+export const dbToggleHoliday = async (d: AltDate) => {
+  const date = altdate2date(d);
   const holiday = await db.holiday.findUnique({
     where: { date },
   });
-  const year_semester = {
-    year: d.year,
-    semester: getSemester(d),
-  };
+  const year_semester = { year, semester };
   if (holiday) {
     return await db.holiday.delete({ where: { date } });
   }

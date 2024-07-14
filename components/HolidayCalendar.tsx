@@ -1,14 +1,10 @@
 import MonthComponent from "@/components/MonthComponent";
-import { dateonly, Semester, semesterMonths } from "@/lib/dates";
-import React from "react";
+import { semester, year } from "@/lib/config";
+import { semesterMonths } from "@/lib/dates";
 
-const year = 2024;
-const semester: Semester = "autumn";
-
-export default function Page() {
+export default function HolidayCalendar() {
   return (
-    <main className="p-6">
-      <h1>Holidays</h1>
+    <div className="flex flex-col">
       {semesterMonths[semester].map((m) => (
         <MonthComponent
           key={`${year}-${m.month}`}
@@ -18,6 +14,6 @@ export default function Page() {
           month={m}
         />
       ))}
-    </main>
+    </div>
   );
 }
