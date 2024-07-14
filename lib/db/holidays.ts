@@ -8,7 +8,7 @@ import {
   yearMonth,
 } from "@/lib/dates";
 import { db } from "@/lib/db/db";
-import { semester, year } from "../config";
+import { SEMESTER, YEAR } from "../config";
 
 export const dbGetHolidaysForYear = async (year: number, semester: Semester) => {
   const result = await db.holiday.findMany({ where: { year, semester } });
@@ -38,7 +38,7 @@ export const dbToggleHoliday = async (d: AltDate) => {
   const holiday = await db.holiday.findUnique({
     where: { date },
   });
-  const year_semester = { year, semester };
+  const year_semester = { year: YEAR, semester: SEMESTER };
   if (holiday) {
     return await db.holiday.delete({ where: { date } });
   }

@@ -1,6 +1,6 @@
-import { semester, year } from "@/lib/config";
+import { SEMESTER, YEAR } from "@/lib/config";
 import { allDatesForSemester, date2str, AltDate, isWeekend } from "@/lib/dates";
-import { dbGetGroups } from "@/lib/db/groups";
+import { dbGroupGetAllWithSlots } from "@/lib/db/groups";
 import { dbGetHolidaysForYear } from "@/lib/db/holidays";
 import { cn } from "@/lib/utils";
 
@@ -12,12 +12,12 @@ type TableCellProps = {
 
 
 export default async function Home() {
-  const holidays = await dbGetHolidaysForYear(year, semester);
+  const holidays = await dbGetHolidaysForYear(YEAR, SEMESTER);
   const holidaySet = new Set(holidays.map(date2str));
 
-  const groups = await dbGetGroups(year, semester);
+  const groups = await dbGroupGetAllWithSlots(YEAR, SEMESTER);
   const groupNumbers = new Set(groups.map(g => g.group.slice(1)));
-  const dates = allDatesForSemester(year, semester).slice(6);
+  const dates = allDatesForSemester(YEAR, SEMESTER).slice(6);
 
   const TableCell = ({ date, children }: TableCellProps) => {
     return (

@@ -1,16 +1,13 @@
-import { endDate, startDate } from "./config";
+import { END_DATE, START_DATE } from "./config";
 import { titleize } from "./utils";
+
+export const WEEK_HOURS: number[] = [
+  8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
+];
 
 export type WeekDay = "Dilluns" | "Dimarts" | "Dimecres" | "Dijous" | "Divendres";
 
-export type Interval = {
-  weekDay: WeekDay;
-  startHour: number;
-  endHour: number;
-  lab: boolean;
-};
-
-export const weekDays: WeekDay[] = [
+export const WEEK_DAYS: WeekDay[] = [
   "Dilluns",
   "Dimarts",
   "Dimecres",
@@ -18,15 +15,12 @@ export const weekDays: WeekDay[] = [
   "Divendres",
 ];
 
-export const isContinuation = (
-  interval: Interval | undefined,
-  weekday: WeekDay,
-  hour: number
-) => {
-  return interval && interval.weekDay === weekday && interval.endHour === hour;
+export type Interval = {
+  weekDay: WeekDay;
+  startHour: number;
+  endHour: number;
+  lab: boolean;
 };
-
-export const weekHours: number[] = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21];
 
 export type Semester = "spring" | "autumn";
 
@@ -43,11 +37,35 @@ export type AltDate = {
 
 export type MaybeAltDate = AltDate | null;
 
+export type Slot = {
+  weekDay: number;
+  startHour: number;
+  endHour: number;
+};
+
+export type Group = {
+  group: string;
+  slots: Slot[];
+}[];
+
+//
+
+export const isContinuation = (
+  interval: Interval | undefined,
+  weekday: WeekDay,
+  hour: number
+) => {
+  return interval && interval.weekDay === weekday && interval.endHour === hour;
+};
+
 export const date2altdate = (d: Date) => ({
   year: d.getFullYear(),
   month: 1 + d.getMonth(),
   day: d.getDate(),
 });
+
+export const hour2str = (weekday: string | undefined, hour: string | undefined) =>
+  `${weekday} ${hour?.padStart(2, "0")}`;
 
 export const isBefore = (d1: AltDate, d2: AltDate) => {
   if (d1.year != d2.year) return d1.year < d2.year;
@@ -59,21 +77,19 @@ export const altdate2date = (d: AltDate) =>
   new Date(Date.UTC(d.year, d.month - 1, d.day));
 
 export const weekDay2index = (str: string): number => {
-  const idx = weekDays.findIndex((day) => (day as string) === str);
+  const idx = WEEK_DAYS.findIndex((day) => (day as string) === str);
   if (idx === -1) {
     throw new Error(`asWeekDay: "${str}" is not a weekday`);
   }
   return idx;
 };
 
-export const asWeekDay = (s: string): WeekDay => weekDays[weekDay2index(s)];
+export const asWeekDay = (s: string): WeekDay => WEEK_DAYS[weekDay2index(s)];
 
 export const yearMonth = (year: number, month: SemesterMonth) => ({
   year: year + month.yearDif,
   month: month.month,
 });
-
-//
 
 export const getSemester = (d: AltDate) =>
   d.month >= 2 && d.month < 8 ? "sprint" : "autumn";
@@ -136,15 +152,15 @@ export const allDatesForMonth = (year: number, m: SemesterMonth) => {
   const next = nextMonth(m);
 
   let end = new Date(Date.UTC(year + next.yearDif, next.month - 1, 1));
-  if (end > altdate2date(endDate)) {
-    end = altdate2date(endDate);
+  if (end > altdate2date(END_DATE)) {
+    end = altdate2date(END_DATE);
   }
 
   let d = new Date(Date.UTC(year + m.yearDif, m.month - 1, 1));
-  if (d < altdate2date(startDate)) {
-    d = altdate2date(startDate);
+  if (d < altdate2date(START_DATE)) {
+    d = altdate2date(START_DATE);
   }
-  
+
   while (d < end) {
     result.push(date2altdate(d));
     d.setDate(d.getDate() + 1);

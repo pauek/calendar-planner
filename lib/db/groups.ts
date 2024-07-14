@@ -1,14 +1,9 @@
 import { Interval, Semester, weekDay2index } from "@/lib/dates";
 import { db } from "@/lib/db/db";
 
-export async function dbAddGroup(
-  year: number,
-  semester: Semester,
-  group: string,
-  intervals: Interval[]
-) {
+export async function dbGroupAdd(year: number, semester: Semester, group: string) {
   const year_semester = { year, semester };
-  await db.group.create({
+  return await db.group.create({
     data: {
       group,
       semester_: {
@@ -17,26 +12,41 @@ export async function dbAddGroup(
           create: year_semester,
         },
       },
+    },
+  });
+}
+
+export async function dbGroupGetAllWithSlots(year: number, semester: Semester) {
+  return await db.group.findMany({
+    where: { year, semester },
+    include: {
       slots: {
-        createMany: {
-          data: intervals.map((ival) => ({
-            weekDay: weekDay2index(ival.weekDay),
-            startHour: ival.startHour,
-            endHour: ival.endHour,
-            lab: false,
-          })),
+        select: {
+          weekDay: true,
+          startHour: true,
+          endHour: true,
+          lab: true,
         },
       },
     },
   });
 }
 
-export async function dbGetGroups(year: number, semester: Semester) {
-  return await db.group.findMany({
-    where: { year, semester },
-    include: {
+export type GroupWithSlots = Awaited<ReturnType<typeof dbGroupGetAllWithSlots>>[number];
+
+export async function dbGroupSetIntervals(groupId: number, intervals: Interval[]) {
+  await db.group.update({
+    where: { id: groupId },
+    data: {
       slots: {
-        select: { weekDay: true, startHour: true, endHour: true, lab: true },
+        createMany: {
+          data: intervals.map((ival) => ({
+            weekDay: weekDay2index(ival.weekDay),
+            startHour: ival.startHour,
+            endHour: ival.endHour,
+            lab: ival.lab,
+          })),
+        },
       },
     },
   });

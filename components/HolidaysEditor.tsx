@@ -1,15 +1,15 @@
 import MonthComponent from "@/components/MonthComponent";
-import { semester, year } from "@/lib/config";
+import { SEMESTER, YEAR } from "@/lib/config";
 import { semesterMonths } from "@/lib/dates";
 
-export default function HolidayCalendar() {
+export default function HolidaysEditor() {
   return (
     <div className="flex flex-col">
-      {semesterMonths[semester].map((m) => (
+      {semesterMonths[SEMESTER].map((m) => (
         <MonthComponent
-          key={`${year}-${m.month}`}
-          year={year}
-          semester={semester}
+          key={`${YEAR}-${m.month}`}
+          year={YEAR}
+          semester={SEMESTER}
           semesterStart={{ year: 2024, month: 9, day: 9 }}
           month={m}
         />

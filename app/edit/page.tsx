@@ -1,16 +1,16 @@
-import HolidayCalendar from "@/components/HolidayCalendar";
-import Timetable from "@/components/Timetable";
-import { semester, year } from "@/lib/config";
-import { dbGetGroups } from "@/lib/db/groups";
+import HolidaysEditor from "@/components/HolidaysEditor";
+import SlotsEditor from "@/components/SlotsEditor";
+import { SEMESTER, YEAR } from "@/lib/config";
+import { dbGroupGetAllWithSlots } from "@/lib/db/groups";
 
 export default async function Home() {
-  const groups = await dbGetGroups(year, semester);
+  const groups = await dbGroupGetAllWithSlots(YEAR, SEMESTER);
 
   return (
     <main className="p-6 flex flex-row">
-      <HolidayCalendar />
+      <HolidaysEditor />
       <div className="w-12"></div>
-      <Timetable groups={groups} />
+      <SlotsEditor groups={groups} />
     </main>
   );
 }
