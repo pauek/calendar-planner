@@ -1,12 +1,15 @@
 "use client";
 
 import { actionToggleHoliday } from "@/actions/holidays";
-import { isWeekend } from "@/lib/dates";
+import { DateOnly, dateOnly2date, isWeekend } from "@/lib/dates";
 import React from "react";
 
-export default function HolidayButton({ date }: { date: Date }) {
+type HolidayButtonProps = {
+  date: DateOnly;
+};
+export default function HolidayButton({ date }: HolidayButtonProps) {
   if (isWeekend(date)) {
-    return <div className="px-4 text-center select-none">{date.getDate()}</div>;
+    return <div className="px-4 text-center select-none">{date.day}</div>;
   }
   return (
     <div
@@ -14,7 +17,7 @@ export default function HolidayButton({ date }: { date: Date }) {
       className="px-4 text-center cursor-pointer select-none hover:outline"
       title={date.toString()}
     >
-      {date.getDate()}
+      {date.day}
     </div>
   );
 }

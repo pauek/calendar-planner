@@ -1,10 +1,11 @@
 "use server"
 
+import { DateOnly } from "@/lib/dates";
 import { dbToggleHoliday } from "@/lib/db/holidays"
 import { revalidatePath } from "next/cache";
 
-export async function actionToggleHoliday(date: Date) {
-  await dbToggleHoliday(date);
-  console.log("actionToggleHoliday", date);
+export async function actionToggleHoliday(d: DateOnly) {
+  const result = await dbToggleHoliday(d);
+  console.log("result", result);
   revalidatePath("/holidays");
 }

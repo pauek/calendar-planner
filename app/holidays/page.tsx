@@ -1,5 +1,5 @@
 import MonthComponent from "@/components/MonthComponent";
-import { Semester, semesterMonths } from "@/lib/dates";
+import { dateonly, Semester, semesterMonths } from "@/lib/dates";
 import React from "react";
 
 const year = 2024;
@@ -14,7 +14,7 @@ export default function Page() {
           key={`${year}-${m.month}`}
           year={year}
           semester={semester}
-          semesterStart={new Date(Date.UTC(2024, 8, 9))}
+          semesterStart={{ year: 2024, month: 9, day: 9 }}
           month={m}
         />
       ))}

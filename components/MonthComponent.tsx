@@ -1,13 +1,14 @@
 import {
   allDatesForMonth,
-  firstOfWeek,
+  mondayOfWeek,
   getMonthName,
   groupIntoWeeks,
   isWeekend,
   MaybeDate,
-  Month,
+  SemesterMonth,
   Semester,
   weekDifference,
+  DateOnly,
 } from "@/lib/dates";
 import { dbGetHolidaysForMonth } from "@/lib/db/holidays";
 import { cn } from "@/lib/utils";
@@ -16,8 +17,8 @@ import HolidayButton from "./HolidayButton";
 type MonthComponentProps = {
   year: number;
   semester: Semester;
-  semesterStart: Date;
-  month: Month;
+  semesterStart: DateOnly;
+  month: SemesterMonth;
 };
 
 export default async function MonthComponent({
@@ -26,13 +27,17 @@ export default async function MonthComponent({
   month,
   semesterStart,
 }: MonthComponentProps) {
+  const monthName = getMonthName(month);
   const weeks = groupIntoWeeks(allDatesForMonth(year, month));
+
   const holidays = await dbGetHolidaysForMonth(
     year + month.yearDif,
     semester,
     month.month
   );
-  const holidaySet = new Set(holidays.map((d) => d.getDate()));
+  console.log(monthName, holidays);
+
+  const holidaySet = new Set(holidays.map((d) => d.day));
 
   const DateCell = ({ d }: { d: MaybeDate }) => {
     return (
@@ -41,7 +46,7 @@ export default async function MonthComponent({
           "border-black",
           isWeekend(d) && "bg-blue-300",
           d && "border",
-          d && holidaySet.has(d.getDate()) && "bg-blue-300"
+          d && holidaySet.has(d.day) && "bg-blue-300"
         )}
       >
         {d && <HolidayButton date={d} />}
@@ -50,11 +55,13 @@ export default async function MonthComponent({
   };
 
   const WeekRow = ({ week }: { week: MaybeDate[] }) => {
-    const fow = firstOfWeek(week);
+    const fow = mondayOfWeek(week);
     const weekNum = 1 + weekDifference(fow, semesterStart);
     return (
       <tr>
-        <td className="pr-2">{weekNum > 0 ? weekNum : undefined}</td>
+        <td className={cn("pr-2", weekNum >= 16 ? "invisible" : "visible")}>
+          {weekNum > 0 ? weekNum : undefined}
+        </td>
         {week.map((d, i) => (
           <DateCell key={i} d={d} />
         ))}
@@ -64,7 +71,7 @@ export default async function MonthComponent({
 
   return (
     <div className="w-[24em] flex flex-col items-center">
-      <h3 className="text-center ">{getMonthName(month)}</h3>
+      <h3 className="text-center ">{monthName}</h3>
       <table className="border-collapse mb-2">
         <tbody>
           {weeks.map((week, i) => (

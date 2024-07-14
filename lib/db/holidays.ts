@@ -1,4 +1,4 @@
-import { getSemester, Semester } from "@/lib/dates";
+import { dateonly, DateOnly, dateOnly2date, getSemester, Semester } from "@/lib/dates";
 import { db } from "@/lib/db/db";
 
 export const dbGetHolidaysForYear = async (year: number, semester: Semester) => {
@@ -16,43 +16,45 @@ export const dbGetHolidaysForMonth = async (
       semester,
       date: {
         gte: new Date(Date.UTC(year, month - 1, 1)),
-        lte: new Date(Date.UTC(year, month, 1)),
+        lt: new Date(Date.UTC(year, month, 1)),
       },
     },
   });
-  // console.log(result.map(d => d.date));
-  return result.map(d => d.date);
+  return result.map((d) => dateonly(d.date));
 };
 
-export const dbAddHoliday = async (date: Date) => {
+export const dbAddHoliday = async (d: DateOnly) => {
   await db.holiday.create({
     data: {
-      date,
-      semester: getSemester(date),
-      year: date.getFullYear(),
+      date: dateOnly2date(d),
+      year: d.year,
+      semester: getSemester(d),
     },
   });
 };
 
-export const dbToggleHoliday = async (date: Date) => {
-  const holiday = await db.holiday.findUnique({ where: { date } });
+export const dbToggleHoliday = async (d: DateOnly) => {
+  const date = dateOnly2date(d);
+  const holiday = await db.holiday.findUnique({
+    where: { date },
+  });
   const year_semester = {
-    year: date.getFullYear(),
-    semester: getSemester(date),
+    year: d.year,
+    semester: getSemester(d),
   };
   if (holiday) {
-    await db.holiday.delete({ where: { date } });
-  } else {
-    await db.holiday.create({
-      data: {
-        date,
-        semester_: {
-          connectOrCreate: {
-            where: { year_semester },
-            create: year_semester,
-          },
+    return await db.holiday.delete({ where: { date } });
+  }
+
+  return await db.holiday.create({
+    data: {
+      date,
+      semester_: {
+        connectOrCreate: {
+          where: { year_semester },
+          create: year_semester,
         },
       },
-    });
-  }
+    },
+  });
 };
