@@ -4,29 +4,27 @@ import { Button } from "@/components/ui/button";
 import { MouseEventHandler } from "react";
 
 type GroupSelectorProps = {
-  groups: string[];
+  options: string[];
   selected: number;
-  lab: boolean;
-  onGroupChange: (index: number) => void;
+  onSelect: (index: number) => void;
 };
-export default function GroupSelector({
-  groups,
+export default function OptionSelector({
+  options,
   selected,
-  lab,
-  onGroupChange,
+  onSelect,
 }: GroupSelectorProps) {
   const handleButtonClick =
     (index: number): MouseEventHandler<HTMLButtonElement> =>
     (e) => {
       e.preventDefault();
-      onGroupChange(index);
+      onSelect(index);
     };
 
   return (
     <div className="flex items-center gap-1 border rounded-lg p-[2px] min-h-[2.5em]">
-      {groups.map((group, index) => (
+      {options.map((option, index) => (
         <Button
-          key={group}
+          key={option}
           className={`rounded-md w-[3.6em] text-sm font-medium ${
             index === selected
               ? "bg-primary text-primary-foreground"
@@ -35,8 +33,7 @@ export default function GroupSelector({
           onClick={handleButtonClick(index)}
           variant={index === selected ? "default" : "ghost"}
         >
-          {lab ? "L" : "T"}
-          {group}
+          {option}
         </Button>
       ))}
     </div>

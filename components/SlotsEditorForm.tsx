@@ -1,10 +1,9 @@
 import { actionGroupAdd } from "@/actions/groups";
-import GroupSelector from "@/components/GroupSelector";
+import OptionSelector from "@/components/OptionSelector";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SEMESTER, YEAR } from "@/lib/config";
 import { GroupWithSlots } from "@/lib/db/groups";
-import { Switch } from "@/components/ui/switch";
 
 type SlotsEditorFormProps = {
   groups: GroupWithSlots[];
@@ -33,16 +32,18 @@ export default function SlotsEditorForm({
         <Input type="text" name="group" />
         <Button>Nou Grup</Button>
       </form>
-      <GroupSelector
-        groups={groups.map((g) => g.group)}
-        selected={selectedGroup}
-        lab={lab}
-        onGroupChange={onSelectGroup}
-      />
-      <label className="flex flex-row items-center mr-8">
-        <Switch checked={lab} onCheckedChange={onSetLab} />
-        <span className="pl-2 select-none cursor-pointer">Laboratory</span>
-      </label>
+      <div className="flex flex-row gap-2">
+        <OptionSelector
+          options={groups.map((g) => g.group)}
+          selected={selectedGroup}
+          onSelect={onSelectGroup}
+        />
+        <OptionSelector
+          options={["T", "L"]}
+          selected={lab ? 1 : 0}
+          onSelect={(n) => onSetLab(n == 1)}
+        />
+      </div>
     </>
   );
 }
