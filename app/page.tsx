@@ -63,7 +63,7 @@ export default async function Home() {
   const allSessions = groups.map((group) => groupSessions(cdates, group))
 
   return (
-    <div className="p-6 w-fit flex flex-col gap-4 items-start">
+    <div className="p-6 w-fit flex flex-col gap-4 items-start select-none">
       {dates.semesterMonths.autumn.map((month, i) => (
         <_MonthTable
           key={i}
@@ -136,7 +136,7 @@ const _MonthTable = async ({ sessions, groups, month }: _MonthTableProps) => {
               "flex flex-row justify-center items-stretch gap-0.5"
             )}
           >
-            {[..."*".repeat(shift)].map((_, i) => (
+            {[..."-".repeat(shift)].map((_, i) => (
               <div key={i} className="h-1 w-1 rounded-full bg-red-500"></div>
             ))}
           </div>
@@ -148,7 +148,7 @@ const _MonthTable = async ({ sessions, groups, month }: _MonthTableProps) => {
   return (
     <div>
       <MonthName month={month} />
-      <table className="border-collapse">
+      <table className="border-collapse select-none">
         <tbody>
           <tr>
             <td></td>
