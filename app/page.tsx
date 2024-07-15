@@ -1,3 +1,4 @@
+import MonthName from "@/components/MonthName"
 import {
   CLASSES_BEGIN,
   CLASSES_END,
@@ -76,18 +77,13 @@ const _MonthTable = async ({ month }: { month: SemesterMonth }) => {
   const TableCell = ({ cdate, children, header }: TableCellProps) => {
     if (!dates.isWithin(SEMESTER_BEGIN, cdate.date, SEMESTER_END)) {
       const tomorrow = dates.isTomorrow(cdate.date, SEMESTER_BEGIN)
+      let border = tomorrow ? "border-r" : "border"
+      let borderColor = "border-transparent"
+      if (tomorrow) {
+        borderColor = header ? "border-black" : "border-gray-400"
+      }
       return (
-        <td
-          className={cn(
-            "p-0",
-            tomorrow
-              ? header
-                ? "border-black"
-                : "border-gray-400"
-              : "border-transparent",
-            tomorrow ? "border-r" : "border"
-          )}
-        >
+        <td className={cn("p-0", border, borderColor)}>
           <div className="w-8"></div>
         </td>
       )
@@ -119,33 +115,43 @@ const _MonthTable = async ({ month }: { month: SemesterMonth }) => {
         shift = "bg-red-400"
       }
       return (
-        <div className={cn("text-center py-0.5", shift)}>{session.text}</div>
+        <div
+          className={cn(
+            "text-center h-6 text-sm flex flex-col justify-center",
+            shift
+          )}
+        >
+          {session.text}
+        </div>
       )
     }
   }
 
   return (
-    <table className="border-collapse">
-      <tbody>
-        <tr>
-          <td></td>
-          {cdates.map((cdate, i) => (
-            <TableCell key={i} cdate={cdate} header={true}>
-              <div className={cn("w-8 text-center")}>{cdate.date.day}</div>
-            </TableCell>
-          ))}
-        </tr>
-        {groups.map((group, ig) => (
-          <tr key={group.id}>
-            <td className="text-right pr-2 text-sm">{group.group}</td>
-            {cdates.map((d, id) => (
-              <TableCell key={id} cdate={d} header={false}>
-                <Session session={sessions[ig][id]} />
+    <div>
+      <MonthName month={month} />
+      <table className="border-collapse">
+        <tbody>
+          <tr>
+            <td></td>
+            {cdates.map((cdate, i) => (
+              <TableCell key={i} cdate={cdate} header={true}>
+                <div className={cn("w-8 text-center")}>{cdate.date.day}</div>
               </TableCell>
             ))}
           </tr>
-        ))}
-      </tbody>
-    </table>
+          {groups.map((group, ig) => (
+            <tr key={group.id}>
+              <td className="text-right pr-2 text-sm">{group.group}</td>
+              {cdates.map((d, id) => (
+                <TableCell key={id} cdate={d} header={false}>
+                  <Session session={sessions[ig][id]} />
+                </TableCell>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   )
 }
