@@ -1,8 +1,7 @@
-import { WeeklySlot } from "@prisma/client"
-import { END_DATE, START_DATE } from "./config"
-import { titleize } from "./utils"
+import { SEMESTER_END, SEMESTER_BEGIN } from "./config"
 import { GroupWithSlots } from "./db/groups"
 import { dbGetHolidaysForYear } from "./db/holidays"
+import { titleize } from "./utils"
 
 export const WEEK_HOURS: number[] = [
   8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
@@ -87,11 +86,23 @@ export const hour2str = (
   hour: string | undefined
 ) => `${weekday} ${hour?.padStart(2, "0")}`
 
-export const isBefore = (d1: AltDate, d2: AltDate) => {
+export const isLessThan = (d1: AltDate, d2: AltDate) => {
   if (d1.year != d2.year) return d1.year < d2.year
   else if (d1.month != d2.month) return d1.month < d2.month
   else return d1.day < d2.day
 }
+
+export const isLessThanOrEqual = (d1: AltDate, d2: AltDate) => {
+  if (d1.year != d2.year) return d1.year <= d2.year
+  else if (d1.month != d2.month) return d1.month <= d2.month
+  else return d1.day <= d2.day
+}
+
+export const isBetween = (a: AltDate, b: AltDate, c: AltDate) =>
+  isLessThan(a, b) && isLessThan(b, c)
+
+export const isWithin = (a: AltDate, b: AltDate, c: AltDate) =>
+  isLessThanOrEqual(a, b) && isLessThanOrEqual(b, c)
 
 export const altdate2date = (d: AltDate) =>
   new Date(Date.UTC(d.year, d.month - 1, d.day))
@@ -122,6 +133,12 @@ export const nextMonth = (m: SemesterMonth): SemesterMonth => {
   }
 }
 
+export const nextDay = (d: Date) => {
+  const result = new Date(d.getTime())
+  result.setDate(result.getDate() + 1)
+  return result
+}
+
 export const getMonthName = (month: SemesterMonth, locale: string = "ca") =>
   titleize(
     new Date(Date.UTC(2000 + month.yearDif, month.month - 1, 1)).toLocaleString(
@@ -139,7 +156,13 @@ export const isWeekend = (date: MaybeAltDate) => {
 }
 
 export const equalDates = (a: AltDate, b: AltDate) => {
-  return a.day === b.day && a.month === b.month && a.year === b.year;
+  return a.day === b.day && a.month === b.month && a.year === b.year
+}
+
+export const isTomorrow = (a: AltDate, b: AltDate) => {
+  const da = altdate2date(a);
+  const db = altdate2date(b);
+  return equalDates(date2altdate(nextDay(da)), date2altdate(db));
 }
 
 export const isSunday = (date: MaybeAltDate) => {
@@ -179,38 +202,40 @@ export const allDatesForSemester = (year: number, semester: Semester) =>
     []
   )
 
-export const allDatesForMonth = (year: number, m: SemesterMonth) => {
+const _allDatesForRange = (begin: Date, end: Date) => {
   const result: AltDate[] = []
-  const next = nextMonth(m)
-
-  let end = new Date(Date.UTC(year + next.yearDif, next.month - 1, 1))
-  if (end > altdate2date(END_DATE)) {
-    end = altdate2date(END_DATE)
-  }
-
-  let d = new Date(Date.UTC(year + m.yearDif, m.month - 1, 1))
-  if (d < altdate2date(START_DATE)) {
-    d = altdate2date(START_DATE)
-  }
-
-  while (d < end) {
-    result.push(date2altdate(d))
-    d.setDate(d.getDate() + 1)
+  for (let x = begin; x < end; x = nextDay(x)) {
+    result.push(date2altdate(x))
   }
   return result
+}
+
+export const allDatesForRange = (begin: AltDate, end: AltDate) =>
+  _allDatesForRange(altdate2date(begin), altdate2date(end))
+
+export const allDatesForMonth = (year: number, m: SemesterMonth, clip?: boolean) => {
+  const next = nextMonth(m)
+  let end = new Date(Date.UTC(year + next.yearDif, next.month - 1, 1))
+  if (clip && end > altdate2date(SEMESTER_END)) {
+    end = altdate2date(SEMESTER_END)
+  }
+  let begin = new Date(Date.UTC(year + m.yearDif, m.month - 1, 1))
+  if (clip && begin < altdate2date(SEMESTER_BEGIN)) {
+    begin = altdate2date(SEMESTER_BEGIN)
+  }
+  return _allDatesForRange(begin, end)
 }
 
 export type CalendarDate = {
   date: AltDate
   holiday: boolean
 }
-export const allDatesWithHolidays = async (
-  year: number,
-  semester: Semester
+export const mergeWithHolidays = async (
+  dates: AltDate[],
+  holidays: AltDate[],
 ): Promise<CalendarDate[]> => {
-  const holidays = await dbGetHolidaysForYear(year, semester)
+  
   console.dir(holidays, { depth: null })
-  const dates = allDatesForSemester(year, semester).slice(6)
   const result = dates.map((date) => ({
     date,
     holiday: !!holidays.find((d) => equalDates(d, date)),

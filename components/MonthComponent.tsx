@@ -28,7 +28,7 @@ export default async function MonthComponent({
   semesterStart,
 }: MonthComponentProps) {
   const monthName = getMonthName(month);
-  const weeks = groupIntoWeeks(allDatesForMonth(year, month));
+  const weeks = groupIntoWeeks(allDatesForMonth(year, month, true));
 
   const holidays = await dbGetHolidaysForMonth(year, semester, month.month);
   const holidaySet = new Set(holidays.map((d) => d.day));
