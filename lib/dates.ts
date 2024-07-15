@@ -159,6 +159,11 @@ export const equalDates = (a: AltDate, b: AltDate) => {
   return a.day === b.day && a.month === b.month && a.year === b.year
 }
 
+export const dateInMonth = (d: AltDate, _year: number, m: SemesterMonth) => {
+  const { year, month } = yearMonth(_year, m);
+  return d.year === year && d.month === month;
+}
+
 export const isTomorrow = (a: AltDate, b: AltDate) => {
   const da = altdate2date(a);
   const db = altdate2date(b);
