@@ -37,18 +37,18 @@ model Group {
   group     String
   year      Int
   semester  String
-  semester_ Semester     @relation(fields: [year, semester], references: [year, semester])
+  semester_ Semester     @relation(fields: [year, semester], references: [year, semester], onDelete: Cascade)
   slots     WeeklySlot[]
 
   @@unique([year, semester, group])
 }
 
 model WeeklySlot {
-  id          Int    @id @default(autoincrement())
-  weekDay     Int
-  startHour   Int
-  endHour     Int
-  lab         Boolean
+  id        Int     @id @default(autoincrement())
+  weekDay   Int
+  startHour Int
+  endHour   Int
+  lab       Boolean
 
   group   Group @relation(fields: [groupId], references: [id])
   groupId Int

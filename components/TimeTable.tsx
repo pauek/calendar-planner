@@ -1,5 +1,5 @@
 import { SLOT_MARGIN, SLOT_WIDTH } from "@/lib/config";
-import { hour2str, Slot, WEEK_DAYS, WEEK_HOURS } from "@/lib/dates";
+import { hour2str, Slot, WEEK_DAYS, WEEK_HOURS, WORK_DAYS } from "@/lib/dates";
 import { GroupWithSlots } from "@/lib/db/groups";
 import { cn } from "@/lib/utils";
 import { MouseEventHandler } from "react";
@@ -10,7 +10,12 @@ type TimeTableProps = {
   slots: Set<string>;
   onClick: (day: string, hour: string) => void;
 };
-export default function TimeTable({ groups, lab, slots, onClick }: TimeTableProps) {
+export default function TimeTable({
+  groups,
+  lab,
+  slots,
+  onClick,
+}: TimeTableProps) {
   const handleClick: MouseEventHandler<HTMLTableCellElement> = (e) => {
     const tableCell = e.target as HTMLTableCellElement;
     const { day, hour } = tableCell.dataset;
@@ -22,13 +27,13 @@ export default function TimeTable({ groups, lab, slots, onClick }: TimeTableProp
 
   const slotPosition = (slot: Slot) => {
     const top = (slot.startHour - 8) * 2 + 1.65;
-    const left = slot.weekDay * 10 + 1.98;
+    const left = (slot.weekDay - 1) * 10 + 1.98;
     const height = (slot.endHour - slot.startHour) * 2 - SLOT_MARGIN * 2;
     return {
       top: `${top}rem`,
       left: `${left}rem`,
       height: `${height}rem`,
-      width: `${SLOT_WIDTH - SLOT_MARGIN * 2 - .05}rem`,
+      width: `${SLOT_WIDTH - SLOT_MARGIN * 2 - 0.05}rem`,
       margin: `${SLOT_MARGIN}rem`,
     };
   };
@@ -61,7 +66,7 @@ export default function TimeTable({ groups, lab, slots, onClick }: TimeTableProp
                 {WEEK_HOURS[0]}h
               </div>
             </td>
-            {WEEK_DAYS.map((wd) => (
+            {WORK_DAYS.map((wd) => (
               <th
                 className="text-center font-bold select-none border-none"
                 key={wd}
@@ -77,16 +82,18 @@ export default function TimeTable({ groups, lab, slots, onClick }: TimeTableProp
                   {h}h
                 </div>
               </td>
-              {WEEK_DAYS.map((_, i) => (
+              {WORK_DAYS.map((_, i) => (
                 <td
                   key={i}
                   data-hour={h - 1}
-                  data-day={WEEK_DAYS[i]}
+                  data-day={WORK_DAYS[i]}
                   className={cn(
                     "cursor-pointer hover:outline outline-gray-500 outline-2",
                     "h-[2em] w-[10em]",
-                    slots.has(hour2str(WEEK_DAYS[i], String(h - 1))) &&
-                      (lab ? "bg-orange-600 opacity-60" : "bg-blue-600 opacity-60")
+                    slots.has(hour2str(WORK_DAYS[i], String(h - 1))) &&
+                      (lab
+                        ? "bg-orange-600 opacity-60"
+                        : "bg-blue-600 opacity-60")
                   )}
                   onClick={handleClick}
                 ></td>
