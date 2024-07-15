@@ -5,7 +5,6 @@ import { dbGroupGetAllWithSlots } from "@/lib/db/groups";
 
 export default async function Home() {
   const groups = await dbGroupGetAllWithSlots(YEAR, SEMESTER);
-
   return (
     <main className="p-6 flex flex-row">
       <HolidaysEditor />

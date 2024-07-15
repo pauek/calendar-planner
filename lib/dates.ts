@@ -1,5 +1,7 @@
+import { WeeklySlot } from "@prisma/client";
 import { END_DATE, START_DATE } from "./config";
 import { titleize } from "./utils";
+import { GroupWithSlots } from "./db/groups";
 
 export const WEEK_HOURS: number[] = [
   8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
@@ -224,7 +226,7 @@ export const weekDifference = (end: AltDate, start: AltDate): number => {
   return Math.floor(daysDiff / 7);
 };
 
-export const selectedHoursToIntervals = (selected: Set<string>): Interval[] => {
+export const slotsToIntervals = (selected: Set<string>, lab: boolean): Interval[] => {
   const result: Interval[] = [];
   const list = [...selected.keys()];
   list.sort();
@@ -244,7 +246,7 @@ export const selectedHoursToIntervals = (selected: Set<string>): Interval[] => {
         weekDay: asWeekDay(sday),
         startHour: hour,
         endHour: hour + 1,
-        lab: false,
+        lab,
       };
       console.log(currInterval);
     }
@@ -254,3 +256,30 @@ export const selectedHoursToIntervals = (selected: Set<string>): Interval[] => {
   }
   return result;
 };
+
+export const groupSlots = (group: GroupWithSlots | undefined, lab: boolean) => {
+  if (group === undefined) {
+    return new Set<string>();
+  }
+  const { slots: groupSlots } = group;
+  const slots: Set<string> = new Set();
+  for (const gslot of groupSlots) {
+    for (let h = gslot.startHour; h < gslot.endHour; h++) {
+      if (lab === undefined || gslot.lab === lab) {
+        slots.add(hour2str(WEEK_DAYS[gslot.weekDay], String(h)));
+      }
+    }
+  }
+  return slots;
+};
+
+/*
+
+const { slots: groupSlots } = group;
+    const hours: Set<string> = new Set();
+    for (const slot of groupSlots) {
+      for (let h = slot.startHour; h < slot.endHour; h++) {
+        hours.add(hour2str(WEEK_DAYS[slot.weekDay], String(h)));
+      }
+    }
+*/

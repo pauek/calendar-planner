@@ -16,3 +16,9 @@ export const setToggleElement = <T> (set: Set<T>, elem: T) => {
   }
   return result;
 };
+
+export const equalSets = <T> (a: Set<T>, b: Set<T>) => {
+  const d1 = a.difference(b);
+  const d2 = b.difference(a);
+  return d1.size == 0 && d2.size == 0;
+}

@@ -34,6 +34,13 @@ export async function dbGroupGetAllWithSlots(year: number, semester: Semester) {
 
 export type GroupWithSlots = Awaited<ReturnType<typeof dbGroupGetAllWithSlots>>[number];
 
+export async function dbGroupDeleteIntervals(groupId: number, lab: boolean) {
+  await db.group.update({
+    where: { id: groupId },
+    data: { slots: { deleteMany: { lab } } },
+  });
+}
+
 export async function dbGroupSetIntervals(groupId: number, intervals: Interval[]) {
   await db.group.update({
     where: { id: groupId },

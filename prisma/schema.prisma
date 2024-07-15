@@ -52,4 +52,6 @@ model WeeklySlot {
 
   group   Group @relation(fields: [groupId], references: [id])
   groupId Int
+
+  @@unique([groupId, weekDay, startHour, endHour, lab])
 }
