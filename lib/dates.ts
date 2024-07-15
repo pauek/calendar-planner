@@ -1,6 +1,5 @@
-import { SEMESTER_END, SEMESTER_BEGIN } from "./config"
-import { GroupWithSlots } from "./db/groups"
-import { dbGetHolidaysForYear } from "./db/holidays"
+import * as config from "./config"
+import { dbGroupGetAllWithSlots, GroupWithSlots } from "./db/groups"
 import { titleize } from "./utils"
 
 export const WEEK_HOURS: number[] = [
@@ -63,6 +62,16 @@ export type Group = {
   slots: Slot[]
 }[]
 
+type SemesterMonths = {
+  autumn: SemesterMonth[]
+  spring: SemesterMonth[]
+}
+
+export type SemesterWeek = {
+  start: AltDate
+  end: AltDate
+}
+
 //
 
 export const isContinuation = (
@@ -74,6 +83,12 @@ export const isContinuation = (
 }
 
 export const weekday = (d: AltDate) => altdate2date(d).getDay()
+
+export const altDate = (year: number, month: number, day: number) => ({
+  year,
+  month,
+  day,
+})
 
 export const date2altdate = (d: Date) => ({
   year: d.getFullYear(),
@@ -160,14 +175,14 @@ export const equalDates = (a: AltDate, b: AltDate) => {
 }
 
 export const dateInMonth = (d: AltDate, _year: number, m: SemesterMonth) => {
-  const { year, month } = yearMonth(_year, m);
-  return d.year === year && d.month === month;
+  const { year, month } = yearMonth(_year, m)
+  return d.year === year && d.month === month
 }
 
 export const isTomorrow = (a: AltDate, b: AltDate) => {
-  const da = altdate2date(a);
-  const db = altdate2date(b);
-  return equalDates(date2altdate(nextDay(da)), date2altdate(db));
+  const da = altdate2date(a)
+  const db = altdate2date(b)
+  return equalDates(date2altdate(nextDay(da)), date2altdate(db))
 }
 
 export const isSunday = (date: MaybeAltDate) => {
@@ -185,10 +200,15 @@ export const mkMonth = (month: number, nextYear: boolean = false) => ({
 
 export const date2str = (d: AltDate): string => `${d.year}-${d.month}-${d.day}`
 
-type SemesterMonths = {
-  autumn: SemesterMonth[]
-  spring: SemesterMonth[]
+export const semesterWeeks = {
+  autumn: [
+    { start: altDate(2024, 9, 9), end: altDate(2024, 10, 6) },
+    { start: altDate(2024, 10, 7), end: altDate(2024, 11, 3) },
+    { start: altDate(2024, 11, 4), end: altDate(2024, 12, 1) },
+    { start: altDate(2024, 12, 2), end: altDate(2024, 12, 22) },
+  ],
 }
+
 export const semesterMonths: SemesterMonths = {
   autumn: [mkMonth(9), mkMonth(10), mkMonth(11), mkMonth(12), mkMonth(1, true)],
   spring: [
@@ -218,34 +238,37 @@ const _allDatesForRange = (begin: Date, end: Date) => {
 export const allDatesForRange = (begin: AltDate, end: AltDate) =>
   _allDatesForRange(altdate2date(begin), altdate2date(end))
 
-export const allDatesForMonth = (year: number, m: SemesterMonth, clip?: boolean) => {
+export const allDatesForMonth = (
+  year: number,
+  m: SemesterMonth,
+  clip?: boolean
+) => {
   const next = nextMonth(m)
   let end = new Date(Date.UTC(year + next.yearDif, next.month - 1, 1))
-  if (clip && end > altdate2date(SEMESTER_END)) {
-    end = altdate2date(SEMESTER_END)
+  if (clip && end > altdate2date(config.SEMESTER_END)) {
+    end = altdate2date(config.SEMESTER_END)
   }
   let begin = new Date(Date.UTC(year + m.yearDif, m.month - 1, 1))
-  if (clip && begin < altdate2date(SEMESTER_BEGIN)) {
-    begin = altdate2date(SEMESTER_BEGIN)
+  if (clip && begin < altdate2date(config.SEMESTER_BEGIN)) {
+    begin = altdate2date(config.SEMESTER_BEGIN)
   }
   return _allDatesForRange(begin, end)
 }
 
 export type CalendarDate = {
   date: AltDate
+  dow: number
   holiday: boolean
 }
 export const mergeWithHolidays = async (
   dates: AltDate[],
-  holidays: AltDate[],
+  holidays: AltDate[]
 ): Promise<CalendarDate[]> => {
-  
-  console.dir(holidays, { depth: null })
   const result = dates.map((date) => ({
     date,
+    dow: altdate2date(date).getDay(),
     holiday: !!holidays.find((d) => equalDates(d, date)),
   }))
-  console.dir(result, { depth: null })
   return result
 }
 
@@ -318,7 +341,6 @@ export const slotsToIntervals = (
   for (const sel of list) {
     const [sday, shour] = sel.split(" ")
     const hour: number = Number(shour)
-    console.log(sday, hour)
     if (isContinuation(currInterval, asWeekDay(sday), hour)) {
       currInterval!.endHour = hour + 1
     } else {
@@ -331,7 +353,6 @@ export const slotsToIntervals = (
         endHour: hour + 1,
         lab,
       }
-      console.log(currInterval)
     }
   }
   if (currInterval) {
@@ -354,4 +375,52 @@ export const groupSlots = (group: GroupWithSlots | undefined, lab: boolean) => {
     }
   }
   return slots
+}
+
+export type SessionInfo = {
+  group: GroupData
+  date: AltDate
+  holiday: boolean
+  dow: number
+  text: string
+  shift?: number
+}
+
+export type GroupData = Awaited<
+  ReturnType<typeof dbGroupGetAllWithSlots>
+>[number]
+
+export const groupSessions = (
+  calendarDates: CalendarDate[],
+  group: GroupData
+) => {
+  const { slots } = group
+  const weekdayMap = new Map<number, boolean>(
+    slots.map((s) => [s.weekDay, s.lab])
+  )
+
+  const thereIsClass = (d: CalendarDate) =>
+    !d.holiday && isWithin(config.CLASSES_BEGIN, d.date, config.CLASSES_END)
+
+  let currL = 1
+  let currT = 1
+  let sessions: SessionInfo[] = []
+  for (const cdate of calendarDates) {
+    const lab = weekdayMap.get(weekday(cdate.date))
+    let info: SessionInfo = { group, ...cdate, text: "" }
+    if (lab !== undefined && thereIsClass(cdate)) {
+      if (lab) {
+        info.text = `L${currL}`
+        currL++
+      } else {
+        info.text = `T${currT}`
+        currT++
+      }
+      if (currL > currT) {
+        info.shift = currT - currL
+      }
+    }
+    sessions.push(info)
+  }
+  return sessions
 }

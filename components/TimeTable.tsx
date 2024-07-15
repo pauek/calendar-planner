@@ -1,15 +1,15 @@
-import { SLOT_MARGIN, SLOT_WIDTH } from "@/lib/config";
-import { hour2str, Slot, WEEK_DAYS, WEEK_HOURS, WORK_DAYS } from "@/lib/dates";
-import { GroupWithSlots } from "@/lib/db/groups";
-import { cn } from "@/lib/utils";
-import { MouseEventHandler } from "react";
+import { SLOT_HEIGHT, SLOT_MARGIN, SLOT_WIDTH } from "@/lib/config"
+import { hour2str, Slot, WEEK_HOURS, WORK_DAYS } from "@/lib/dates"
+import { GroupWithSlots } from "@/lib/db/groups"
+import { cn } from "@/lib/utils"
+import { MouseEventHandler } from "react"
 
 type TimeTableProps = {
-  groups: GroupWithSlots[];
-  lab: boolean;
-  slots: Set<string>;
-  onClick: (day: string, hour: string) => void;
-};
+  groups: GroupWithSlots[]
+  lab: boolean
+  slots: Set<string>
+  onClick: (day: string, hour: string) => void
+}
 export default function TimeTable({
   groups,
   lab,
@@ -17,26 +17,27 @@ export default function TimeTable({
   onClick,
 }: TimeTableProps) {
   const handleClick: MouseEventHandler<HTMLTableCellElement> = (e) => {
-    const tableCell = e.target as HTMLTableCellElement;
-    const { day, hour } = tableCell.dataset;
+    const tableCell = e.target as HTMLTableCellElement
+    const { day, hour } = tableCell.dataset
     if (!day || !hour) {
-      throw new Error(`Missing 'data-day' or 'data-hour' in <td>!`);
+      throw new Error(`Missing 'data-day' or 'data-hour' in <td>!`)
     }
-    onClick(day, hour);
-  };
+    onClick(day, hour)
+  }
 
   const slotPosition = (slot: Slot) => {
-    const top = (slot.startHour - 8) * 2 + 1.65;
-    const left = (slot.weekDay - 1) * 10 + 1.98;
-    const height = (slot.endHour - slot.startHour) * 2 - SLOT_MARGIN * 2;
+    const top = (slot.startHour - 8) * SLOT_HEIGHT + 1.65
+    const left = (slot.weekDay - 1) * SLOT_WIDTH + 1.98
+    const height =
+      (slot.endHour - slot.startHour) * SLOT_HEIGHT - 2 * SLOT_MARGIN
     return {
       top: `${top}rem`,
       left: `${left}rem`,
       height: `${height}rem`,
       width: `${SLOT_WIDTH - SLOT_MARGIN * 2 - 0.05}rem`,
       margin: `${SLOT_MARGIN}rem`,
-    };
-  };
+    }
+  }
 
   return (
     <div className="relative">
@@ -44,7 +45,7 @@ export default function TimeTable({
         g.slots.map((slot) => (
           <div
             className={cn(
-              "absolute -z-10 w-[10em] text-black",
+              "absolute -z-10 text-black",
               "border border-gray-300 opacity-50 rounded",
               "h-[2em] flex flex-col items-center justify-center",
               slot.lab ? "bg-orange-100" : "bg-blue-100"
@@ -89,12 +90,13 @@ export default function TimeTable({
                   data-day={WORK_DAYS[i]}
                   className={cn(
                     "cursor-pointer hover:outline outline-gray-500 outline-2",
-                    "h-[2em] w-[10em]",
+                    "h-[2em]",
                     slots.has(hour2str(WORK_DAYS[i], String(h - 1))) &&
                       (lab
                         ? "bg-orange-600 opacity-60"
                         : "bg-blue-600 opacity-60")
                   )}
+                  style={{ width: `${SLOT_WIDTH}rem` }}
                   onClick={handleClick}
                 ></td>
               ))}
@@ -103,5 +105,5 @@ export default function TimeTable({
         </tbody>
       </table>
     </div>
-  );
+  )
 }

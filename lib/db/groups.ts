@@ -42,7 +42,6 @@ export async function dbGroupDeleteIntervals(groupId: number, lab: boolean) {
 }
 
 export async function dbGroupSetIntervals(groupId: number, intervals: Interval[]) {
-  console.dir(intervals, { depth: null });
   await db.group.update({
     where: { id: groupId },
     data: {

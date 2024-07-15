@@ -10,7 +10,7 @@ import {
   weekDifference,
   AltDate,
 } from "@/lib/dates"
-import { dbGetHolidaysForMonth } from "@/lib/db/holidays"
+import { dbGetHolidaysForMonth } from "@/lib/db/special-days"
 import { cn } from "@/lib/utils"
 import HolidayButton from "./HolidayButton"
 import MonthName from "./MonthName"

@@ -17,15 +17,16 @@ model Semester {
   semester String
   type     SemesterType @relation(fields: [semester], references: [type])
 
-  holidays Holiday[]
+  holidays SpecialDay[]
   Group    Group[]
 
   @@id([year, semester])
 }
 
-model Holiday {
+model SpecialDay {
   id   Int      @id @default(autoincrement())
   date DateTime @unique
+  type String   @default("no-class")
 
   semester_ Semester @relation(fields: [year, semester], references: [year, semester])
   year      Int
