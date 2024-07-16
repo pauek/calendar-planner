@@ -390,9 +390,14 @@ export type GroupData = Awaited<
   ReturnType<typeof dbGroupGetAllWithSlots>
 >[number]
 
+type GroupSessionOptions = {
+  includeNonClasses?: boolean
+}
+
 export const groupSessions = (
   calendarDates: CalendarDate[],
-  group: GroupData
+  group: GroupData,
+  options: GroupSessionOptions = { includeNonClasses: true }
 ) => {
   const { slots } = group
   const weekdayMap = new Map<number, boolean>(
@@ -419,8 +424,12 @@ export const groupSessions = (
       if (currL > currT) {
         info.shift = currT - currL
       }
+      sessions.push(info)
+    } else {
+      if (options && options.includeNonClasses) {
+        sessions.push(info)
+      }
     }
-    sessions.push(info)
   }
   return sessions
 }

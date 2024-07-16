@@ -23,5 +23,17 @@ export const equalSets = <T>(a: Set<T>, b: Set<T>) => {
   return d1.size == 0 && d2.size == 0
 }
 
-export const makeArray = <T>({ length, elem }: { length: number; elem?: T }) =>
-  Array.from({ length }).map((_) => elem)
+export const makeArray = <T>({ length, elemFn }: { length: number; elemFn?: () => T }) =>
+  Array.from({ length }).map((_) => elemFn && elemFn()) as T[]
+
+export function transpose<T>(matrix: T[][]): T[][] {
+  const rows = matrix.length
+  const cols = matrix.reduce((acc, row) => Math.max(acc, row.length), 0)
+  const result: T[][] = makeArray<T[]>({ length: cols, elemFn: () => [] })
+  for (let i = 0; i < cols; i++) {
+    for (let j = 0; j < rows; j++) {
+      result[i][j] = matrix[j][i]
+    }
+  }
+  return result
+}
