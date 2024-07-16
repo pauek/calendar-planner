@@ -182,6 +182,10 @@ type TableCellProps = {
 const TableCell = ({ cdate, children, header, className }: TableCellProps) => {
   const common = "p-0 h-[1px]"
 
+  if (cdate === undefined) {
+    return <td></td>
+  }
+
   if (!dates.isWithin(config.SEMESTER_BEGIN, cdate.date, config.SEMESTER_END)) {
     const tomorrow = dates.isTomorrow(cdate.date, config.SEMESTER_BEGIN)
 
