@@ -12,9 +12,7 @@ export default async function Home() {
   const allDates = dates.allDatesForSemester(config.YEAR, config.SEMESTER)
   const cdates = await dates.mergeWithHolidays(allDates, holidays)
   const groups = await dbGroupGetAllWithSlots(config.YEAR, config.SEMESTER)
-  const allGroupsSessions = groups.map((group) =>
-    dates.groupSessions(cdates, group)
-  )
+  const allGroupsSessions = groups.map((group) => dates.groupSessions(cdates, group))
 
   return (
     <div className="p-6 w-fit flex flex-col gap-4 items-start select-none">
@@ -30,13 +28,9 @@ export default async function Home() {
                 <MonthName className="pl-8" month={month} />
                 <DayTable
                   groups={groups}
-                  cdates={cdates.filter((d) =>
-                    dates.dateInMonth(d.date, config.YEAR, month)
-                  )}
+                  cdates={cdates.filter((d) => dates.dateInMonth(d.date, config.YEAR, month))}
                   sessions={allGroupsSessions.map((sessions) =>
-                    sessions.filter((s) =>
-                      dates.dateInMonth(s.date, config.YEAR, month)
-                    )
+                    sessions.filter((s) => dates.dateInMonth(s.date, config.YEAR, month))
                   )}
                 />
               </div>
@@ -49,13 +43,9 @@ export default async function Home() {
               <DayTable
                 firstWeekStart={dates.semesterWeeks.autumn[0].start}
                 groups={groups}
-                cdates={cdates.filter((d) =>
-                  dates.isWithin(week.start, d.date, week.end)
-                )}
+                cdates={cdates.filter((d) => dates.isWithin(week.start, d.date, week.end))}
                 sessions={allGroupsSessions.map((sessions) =>
-                  sessions.filter((s) =>
-                    dates.isWithin(week.start, s.date, week.end)
-                  )
+                  sessions.filter((s) => dates.isWithin(week.start, s.date, week.end))
                 )}
               />
             </div>
@@ -72,12 +62,7 @@ type DayTableProps = {
   cdates: CalendarDate[]
   groups: dates.GroupData[]
 }
-const DayTable = async ({
-  firstWeekStart,
-  sessions,
-  cdates,
-  groups,
-}: DayTableProps) => {
+const DayTable = async ({ firstWeekStart, sessions, cdates, groups }: DayTableProps) => {
   return (
     <table className="border-collapse select-none">
       <tbody>
@@ -96,9 +81,7 @@ const DayTable = async ({
         </tr>
         {groups.map((group, ig) => (
           <tr key={group.id}>
-            <td className="text-right pr-2 w-8 text-sm text-stone-400">
-              {group.group}
-            </td>
+            <td className="text-right pr-2 w-8 text-sm text-stone-400">{group.group}</td>
             {sessions[ig].map((session, id) => (
               <TableCell key={id} cdate={session} header={false}>
                 <Session session={sessions[ig][id]} />
@@ -146,28 +129,36 @@ type TableCellProps = {
 const TableCell = ({ cdate, children, header, className }: TableCellProps) => {
   if (!dates.isWithin(config.SEMESTER_BEGIN, cdate.date, config.SEMESTER_END)) {
     const tomorrow = dates.isTomorrow(cdate.date, config.SEMESTER_BEGIN)
-    let border = tomorrow ? "border-r" : "border"
-    let borderColor = "border-transparent"
+
+    let br = ""
     if (tomorrow) {
-      borderColor = header ? "border-black" : "border-gray-400"
+      br = "border-r"
+      if (dates.isWeekend(cdate.date)) {
+        br = "border-r-2 border-r-black"
+      }
     }
+
     return (
-      <td className={cn("p-0", border, borderColor, className)}>
+      <td className={cn("p-0 border border-transparent", br, className)}>
         <div className="w-8"></div>
       </td>
     )
+  } else {
+    let b = "border"
+    let bcolor = header ? "border-black" : "border-gray-400"
+    let sunday = cdate.dow === 0
+    if (sunday) {
+      b = "border border-r-2"
+      bcolor = `${bcolor} border-r-black`
+    }
+
+    let bg = ""
+    if (dates.isWeekend(cdate.date)) {
+      bg = "bg-gray-300"
+    } else if (cdate.holiday) {
+      bg = "bg-blue-200"
+    }
+
+    return <td className={cn("p-0", b, bcolor, bg, className)}>{children}</td>
   }
-  return (
-    <td
-      className={cn(
-        "border p-0",
-        header ? "border-black" : "border-gray-400",
-        dates.isWeekend(cdate.date) && "bg-gray-300",
-        cdate.holiday && "bg-blue-200",
-        className
-      )}
-    >
-      {children}
-    </td>
-  )
 }
