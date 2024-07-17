@@ -3,7 +3,7 @@
 import { actionGroupSetIntervals } from "@/actions/groups";
 import { Button } from "@/components/ui/button";
 import { groupSlots, hour2str, slotsToIntervals } from "@/lib/dates";
-import { GroupWithSlots } from "@/lib/db/groups";
+import { CourseWithGroups } from "@/lib/db/courses";
 import { equalSets, setToggleElement } from "@/lib/utils";
 import { Undo2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -17,9 +17,10 @@ type ShownSlots = {
 };
 
 type TimetableProps = {
-  groups: GroupWithSlots[];
+  course: NonNullable<CourseWithGroups>;
 };
-export default function SlotsEditor({ groups }: TimetableProps) {
+export default function SlotsEditor({ course }: TimetableProps) {
+  const { groups } = course;
   const [selectedGroup, setSelectedGroup] = useState<number>(0);
   const [lab, setLab] = useState<boolean>(false);
   const [slots, setSlots] = useState<ShownSlots>({
@@ -63,7 +64,7 @@ export default function SlotsEditor({ groups }: TimetableProps) {
   return (
     <div className="pl-6 flex flex-col gap-3">
       <SlotsEditorForm
-        groups={groups}
+        course={course}
         selectedGroup={selectedGroup}
         lab={lab}
         onSelectGroup={setSelectedGroup}

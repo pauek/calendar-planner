@@ -1,11 +1,11 @@
 "use server";
 
-import { Interval, Semester } from "@/lib/dates";
-import { dbGroupAdd, dbGroupDeleteIntervals, dbGroupSetIntervals } from "@/lib/db/groups";
+import { Interval, Period } from "@/lib/dates";
+import { dbGroupAdd, dbGroupDeleteIntervals, dbGroupSetIntervals } from "@/lib/db/courses";
 import { revalidatePath } from "next/cache";
 
-export async function actionGroupAdd(year: number, semester: Semester, group: string) {
-  await dbGroupAdd(year, semester, group);
+export async function actionGroupAdd(courseId: number, group: string) {
+  await dbGroupAdd(courseId, group);
   revalidatePath("/timetable");
 }
 

@@ -1,15 +1,17 @@
-"use client";
+"use client"
 
-import { actionToggleHoliday } from "@/actions/holidays";
-import { date2str, AltDate, altdate2date, isWeekend } from "@/lib/dates";
-import React from "react";
+import { actionToggleHoliday } from "@/actions/special_days"
+import { AltDate, date2str, isWeekend } from "@/lib/dates"
+import { useCourse } from "./CourseProvider"
 
 type HolidayButtonProps = {
-  date: AltDate;
-};
+  date: AltDate
+}
 export default function HolidayButton({ date }: HolidayButtonProps) {
-  if (isWeekend(date)) {
-    return <div className="px-3 text-center select-none">{date.day}</div>;
+  const { course, semester } = useCourse()
+
+  if (isWeekend(date) || !course || !semester) {
+    return <div className="px-3 text-center select-none">{date.day}</div>
   }
   return (
     <div
@@ -19,5 +21,5 @@ export default function HolidayButton({ date }: HolidayButtonProps) {
     >
       {date.day}
     </div>
-  );
+  )
 }

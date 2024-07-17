@@ -1,6 +1,6 @@
 import { SLOT_HEIGHT, SLOT_MARGIN, SLOT_WIDTH } from "@/lib/config"
 import { hour2str, Slot, WEEK_HOURS, WORK_DAYS } from "@/lib/dates"
-import { GroupWithSlots } from "@/lib/db/groups"
+import { GroupWithSlots } from "@/lib/db/courses"
 import { cn } from "@/lib/utils"
 import { MouseEventHandler } from "react"
 

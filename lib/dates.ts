@@ -1,10 +1,8 @@
-import * as config from "./config"
-import { dbGroupGetAllWithSlots, GroupWithSlots } from "./db/groups"
+import { GroupWithSlots } from "./db/courses"
+import { SpecialDay } from "./db/special-days"
 import { titleize } from "./utils"
 
-export const WEEK_HOURS: number[] = [
-  8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
-]
+export const WEEK_HOURS: number[] = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
 
 export type WeekDay =
   | "Diumenge"
@@ -34,7 +32,9 @@ export type Interval = {
   lab: boolean
 }
 
-export type Semester = "spring" | "autumn"
+export type Period = "spring" | "autumn"
+
+export type SpecialDayType = "no-class" | "semester-start" | "semester-end" | "classes-end"
 
 export type SemesterMonth = {
   month: number
@@ -62,10 +62,7 @@ export type Group = {
   slots: Slot[]
 }[]
 
-type SemesterMonths = {
-  autumn: SemesterMonth[]
-  spring: SemesterMonth[]
-}
+type SemesterMonths = Record<Period, SemesterMonth[]>
 
 export type SemesterWeek = {
   start: AltDate
@@ -74,11 +71,7 @@ export type SemesterWeek = {
 
 //
 
-export const isContinuation = (
-  interval: Interval | undefined,
-  weekday: WeekDay,
-  hour: number
-) => {
+export const isContinuation = (interval: Interval | undefined, weekday: WeekDay, hour: number) => {
   return interval && interval.weekDay === weekday && interval.endHour === hour
 }
 
@@ -96,10 +89,8 @@ export const date2altdate = (d: Date) => ({
   day: d.getDate(),
 })
 
-export const hour2str = (
-  weekday: string | undefined,
-  hour: string | undefined
-) => `${weekday} ${hour?.padStart(2, "0")}`
+export const hour2str = (weekday: string | undefined, hour: string | undefined) =>
+  `${weekday} ${hour?.padStart(2, "0")}`
 
 export const isLessThan = (d1: AltDate, d2: AltDate) => {
   if (d1.year != d2.year) return d1.year < d2.year
@@ -116,11 +107,10 @@ export const isLessThanOrEqual = (d1: AltDate, d2: AltDate) => {
 export const isBetween = (a: AltDate, b: AltDate, c: AltDate) =>
   isLessThan(a, b) && isLessThan(b, c)
 
-export const isWithin = (a: AltDate, b: AltDate, c: AltDate) =>
-  isLessThanOrEqual(a, b) && isLessThanOrEqual(b, c)
+export const isWithin = (low: AltDate | undefined, x: AltDate, high: AltDate | undefined) =>
+  (!low || isLessThanOrEqual(low, x)) && (!high || isLessThanOrEqual(x, high))
 
-export const altdate2date = (d: AltDate) =>
-  new Date(Date.UTC(d.year, d.month - 1, d.day))
+export const altdate2date = (d: AltDate) => new Date(Date.UTC(d.year, d.month - 1, d.day))
 
 export const weekDay2index = (str: string): number => {
   const idx = WEEK_DAYS.findIndex((day) => (day as string) === str)
@@ -137,8 +127,7 @@ export const yearMonth = (year: number, month: SemesterMonth) => ({
   month: month.month,
 })
 
-export const getSemester = (d: AltDate) =>
-  d.month >= 2 && d.month < 8 ? "sprint" : "autumn"
+export const getSemester = (d: AltDate) => (d.month >= 2 && d.month < 8 ? "sprint" : "autumn")
 
 export const nextMonth = (m: SemesterMonth): SemesterMonth => {
   if (m.month < 12) {
@@ -156,10 +145,9 @@ export const nextDay = (d: Date) => {
 
 export const getMonthName = (month: SemesterMonth, locale: string = "ca") =>
   titleize(
-    new Date(Date.UTC(2000 + month.yearDif, month.month - 1, 1)).toLocaleString(
-      locale,
-      { month: "long" }
-    )
+    new Date(Date.UTC(2000 + month.yearDif, month.month - 1, 1)).toLocaleString(locale, {
+      month: "long",
+    })
   )
 
 export const isWeekend = (date: MaybeAltDate) => {
@@ -179,7 +167,10 @@ export const dateInMonth = (d: AltDate, _year: number, m: SemesterMonth) => {
   return d.year === year && d.month === month
 }
 
-export const isTomorrow = (a: AltDate, b: AltDate) => {
+export const isTomorrow = (a: AltDate, b: AltDate | undefined) => {
+  if (!b) {
+    return false
+  }
   const da = altdate2date(a)
   const db = altdate2date(b)
   return equalDates(date2altdate(nextDay(da)), date2altdate(db))
@@ -211,21 +202,37 @@ export const semesterWeeks = {
 
 export const semesterMonths: SemesterMonths = {
   autumn: [mkMonth(9), mkMonth(10), mkMonth(11), mkMonth(12), mkMonth(1, true)],
-  spring: [
-    mkMonth(2),
-    mkMonth(3),
-    mkMonth(4),
-    mkMonth(5),
-    mkMonth(6),
-    mkMonth(7),
-  ],
+  spring: [mkMonth(2), mkMonth(3), mkMonth(4), mkMonth(5), mkMonth(6), mkMonth(7)],
 }
 
-export const allDatesForSemester = (year: number, semester: Semester) =>
-  semesterMonths[semester].reduce<AltDate[]>(
-    (acc, m) => acc.concat(allDatesForMonth(year, m)),
-    []
-  )
+const _month2period: (Period | null)[] = [
+  null, // ------- (0)
+  "autumn", // 1
+  //
+  "spring", // 2
+  "spring", // 3
+  "spring", // 4
+  "spring", // 5
+  "spring", // 6
+  "spring", // 7
+  null,
+  "autumn", // 9
+  "autumn", // 10
+  "autumn", // 11
+  "autumn", // 12
+]
+
+export const month2period = (date: AltDate) => {
+  const period = _month2period[date.month]
+  if (period === null) {
+    throw new Error(`Month ${date.month} does not have a Period!`)
+  }
+  const year = date.year + (date.month === 1 ? -1 : 0)
+  return { year, period }
+}
+
+export const allDatesForSemester = (year: number, semester: Period) =>
+  semesterMonths[semester].reduce<AltDate[]>((acc, m) => acc.concat(allDatesForMonth(year, m)), [])
 
 const _allDatesForRange = (begin: Date, end: Date) => {
   const result: AltDate[] = []
@@ -238,19 +245,27 @@ const _allDatesForRange = (begin: Date, end: Date) => {
 export const allDatesForRange = (begin: AltDate, end: AltDate) =>
   _allDatesForRange(altdate2date(begin), altdate2date(end))
 
-export const allDatesForMonth = (
-  year: number,
-  m: SemesterMonth,
-  clip?: boolean
-) => {
+export const allDatesForMonth = (year: number, m: SemesterMonth) => {
   const next = nextMonth(m)
   let end = new Date(Date.UTC(year + next.yearDif, next.month - 1, 1))
-  if (clip && end > altdate2date(config.SEMESTER_END)) {
-    end = altdate2date(config.SEMESTER_END)
-  }
   let begin = new Date(Date.UTC(year + m.yearDif, m.month - 1, 1))
-  if (clip && begin < altdate2date(config.SEMESTER_BEGIN)) {
-    begin = altdate2date(config.SEMESTER_BEGIN)
+  return _allDatesForRange(begin, end)
+}
+
+export const allDatesForMonthBetween = (
+  year: number,
+  m: SemesterMonth,
+  limitLow: AltDate | undefined,
+  limitHigh: AltDate | undefined
+) => {
+  const next = nextMonth(m)
+  let begin = new Date(Date.UTC(year + m.yearDif, m.month - 1, 1))
+  if (limitLow && begin < altdate2date(limitLow)) {
+    begin = altdate2date(limitLow)
+  }
+  let end = new Date(Date.UTC(year + next.yearDif, next.month - 1, 1))
+  if (limitHigh && end > altdate2date(limitHigh)) {
+    end = altdate2date(limitHigh)
   }
   return _allDatesForRange(begin, end)
 }
@@ -262,12 +277,12 @@ export type CalendarDate = {
 }
 export const mergeWithHolidays = async (
   dates: AltDate[],
-  holidays: AltDate[]
+  specialDays: SpecialDay[]
 ): Promise<CalendarDate[]> => {
   const result = dates.map((date) => ({
     date,
     dow: altdate2date(date).getDay(),
-    holiday: !!holidays.find((d) => equalDates(d, date)),
+    holiday: !!specialDays.find((d) => equalDates(d.date, date)),
   }))
   return result
 }
@@ -329,10 +344,7 @@ export const weekDifference = (end: AltDate, start: AltDate): number => {
   return Math.floor(daysDiff / 7)
 }
 
-export const slotsToIntervals = (
-  selected: Set<string>,
-  lab: boolean
-): Interval[] => {
+export const slotsToIntervals = (selected: Set<string>, lab: boolean): Interval[] => {
   const result: Interval[] = []
   const list = [...selected.keys()]
   list.sort()
@@ -378,7 +390,7 @@ export const groupSlots = (group: GroupWithSlots | undefined, lab: boolean) => {
 }
 
 export type SessionInfo = {
-  group: GroupData
+  group: GroupWithSlots
   date: AltDate
   holiday: boolean
   dow: number
@@ -386,26 +398,21 @@ export type SessionInfo = {
   shift?: number
 }
 
-export type GroupData = Awaited<
-  ReturnType<typeof dbGroupGetAllWithSlots>
->[number]
-
 type GroupSessionOptions = {
   includeNonClasses?: boolean
 }
 
 export const groupSessions = (
+  classesBegin: AltDate | undefined,
+  classesEnd: AltDate | undefined,
   calendarDates: CalendarDate[],
-  group: GroupData,
+  group: GroupWithSlots,
   options: GroupSessionOptions = { includeNonClasses: true }
 ) => {
   const { slots } = group
-  const weekdayMap = new Map<number, boolean>(
-    slots.map((s) => [s.weekDay, s.lab])
-  )
+  const weekdayMap = new Map<number, boolean>(slots.map((s) => [s.weekDay, s.lab]))
 
-  const thereIsClass = (d: CalendarDate) =>
-    !d.holiday && isWithin(config.CLASSES_BEGIN, d.date, config.CLASSES_END)
+  const thereIsClass = (d: CalendarDate) => !d.holiday && isWithin(classesBegin, d.date, classesEnd)
 
   let currL = 1
   let currT = 1

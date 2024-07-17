@@ -1,56 +1,57 @@
 import {
-  allDatesForMonth,
-  mondayOfWeek,
-  getMonthName,
+  allDatesForMonthBetween,
   groupIntoWeeks,
   isWeekend,
   MaybeAltDate,
+  mondayOfWeek,
+  Period,
   SemesterMonth,
-  Semester,
   weekDifference,
-  AltDate,
 } from "@/lib/dates"
-import { dbGetHolidaysForMonth } from "@/lib/db/special-days"
+import { SemesterWithLimits } from "@/lib/db/semester"
+import { dbSpecialDaysGetForMonth } from "@/lib/db/special-days"
 import { cn } from "@/lib/utils"
 import HolidayButton from "./HolidayButton"
 import MonthName from "./MonthName"
 
 type MonthComponentProps = {
-  year: number
-  semester: Semester
-  semesterStart: AltDate
+  semester: SemesterWithLimits
   month: SemesterMonth
 }
 
-export default async function MonthComponent({
-  year,
-  semester,
-  month,
-  semesterStart,
-}: MonthComponentProps) {
-  const weeks = groupIntoWeeks(allDatesForMonth(year, month, true))
+export default async function MonthComponent({ semester, month }: MonthComponentProps) {
+  const { year, start, end } = semester
+  if (start === undefined) {
+    throw new Error(`Semester missing start date!`)
+  }
 
-  const holidays = await dbGetHolidaysForMonth(year, semester, month.month)
-  const holidaySet = new Set(holidays.map((d) => d.day))
+  const weeks = groupIntoWeeks(allDatesForMonthBetween(year, month, start, end))
 
-  const DateCell = ({ d }: { d: MaybeAltDate }) => {
-    return (
-      <td
-        className={cn(
-          "border-black",
-          isWeekend(d) && "bg-gray-300",
-          d && "border",
-          d && holidaySet.has(d.day) && "bg-blue-300"
-        )}
-      >
-        {d && <HolidayButton date={d} />}
-      </td>
-    )
+  const specialDays = await dbSpecialDaysGetForMonth(
+    year,
+    semester.semester as Period,
+    month.month
+  )
+  console.log(specialDays);
+  const nonClass = new Set(specialDays.filter((d) => d.type === "no-class").map((d) => d.date.day))
+
+  const DateCell = ({ date }: { date: MaybeAltDate }) => {
+    let border = ""
+    let background = ""
+    if (date) {
+      border = "border border-black"
+      if (isWeekend(date)) {
+        background = "bg-gray-300"
+      } else if (nonClass.has(date.day)) {
+        background = "bg-blue-300"
+      }
+    }
+    return <td className={cn(border, background)}>{date && <HolidayButton date={date} />}</td>
   }
 
   const WeekRow = ({ week }: { week: MaybeAltDate[] }) => {
     const fow = mondayOfWeek(week)
-    const weekNum = 1 + weekDifference(fow, semesterStart)
+    const weekNum = 1 + weekDifference(fow, start)
     return (
       <tr>
         <td
@@ -62,7 +63,7 @@ export default async function MonthComponent({
           {weekNum > 0 ? weekNum : undefined}
         </td>
         {week.map((d, i) => (
-          <DateCell key={i} d={d} />
+          <DateCell key={i} date={d} />
         ))}
       </tr>
     )

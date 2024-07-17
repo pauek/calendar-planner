@@ -17,10 +17,25 @@ export const setToggleElement = <T>(set: Set<T>, elem: T) => {
   return result
 }
 
+export const setDifference = <T>(a: Set<T>, b: Set<T>) => {
+  const result: Set<T> = new Set<T>();
+  for (const elem of a) {
+    if (!b.has(elem)) {
+      result.add(elem);
+    }
+  }
+  return result;
+}
+
 export const equalSets = <T>(a: Set<T>, b: Set<T>) => {
-  const d1 = a.difference(b)
-  const d2 = b.difference(a)
-  return d1.size == 0 && d2.size == 0
+  try {
+    const d1 = setDifference(a, b)
+    const d2 = setDifference(b, a);
+    return d1.size == 0 && d2.size == 0
+  } catch (e) {
+    console.log(a, b)
+    console.error(e)
+  }
 }
 
 export const makeArray = <T>({ length, elemFn }: { length: number; elemFn?: () => T }) =>
@@ -36,4 +51,14 @@ export function transpose<T>(matrix: T[][]): T[][] {
     }
   }
   return result
+}
+
+const rCoursePath = /^\/courses\/(\d+)\/.*$/
+export const getCourseIdFromPathname = (path: string) => {
+  const match = path.match(rCoursePath);
+  if (match != null) {
+    return Number(match[1]);
+  } else {
+    return null;
+  }
 }

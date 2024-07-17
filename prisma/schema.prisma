@@ -8,40 +8,54 @@ datasource db {
 }
 
 model SemesterType {
-  type      String     @id @unique
+  period    String     @id @unique
   semesters Semester[]
 }
 
 model Semester {
-  year     Int
-  semester String
-  type     SemesterType @relation(fields: [semester], references: [type])
+  year   Int
+  period String
 
-  holidays SpecialDay[]
-  Group    Group[]
+  type SemesterType @relation(fields: [period], references: [period])
 
-  @@id([year, semester])
+  specialDays SpecialDay[]
+  courses     Course[]
+
+  @@id([year, period])
 }
 
 model SpecialDay {
-  id   Int      @id @default(autoincrement())
-  date DateTime @unique
-  type String   @default("no-class")
+  id     Int      @id @default(autoincrement())
+  date   DateTime
+  type   String
+  year   Int
+  period String
 
-  semester_ Semester @relation(fields: [year, semester], references: [year, semester])
-  year      Int
-  semester  String
+  semester Semester @relation(fields: [year, period], references: [year, period])
+
+  @@unique([date, type])
+}
+
+model Course {
+  id     Int    @id @default(autoincrement())
+  name   String
+  year   Int
+  period String
+
+  semester Semester @relation(fields: [year, period], references: [year, period])
+
+  groups Group[]
 }
 
 model Group {
-  id        Int          @id @default(autoincrement())
-  group     String
-  year      Int
-  semester  String
-  semester_ Semester     @relation(fields: [year, semester], references: [year, semester], onDelete: Cascade)
-  slots     WeeklySlot[]
+  id       Int    @id @default(autoincrement())
+  group    String
+  courseId Int
+  course   Course @relation(fields: [courseId], references: [id])
 
-  @@unique([year, semester, group])
+  slots WeeklySlot[]
+
+  @@unique([courseId, group])
 }
 
 model WeeklySlot {
