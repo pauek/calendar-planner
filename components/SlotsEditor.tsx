@@ -62,7 +62,7 @@ export default function SlotsEditor({ course }: TimetableProps) {
   };
 
   return (
-    <div className="pl-6 flex flex-col gap-3">
+    <div className="pt-6 flex flex-col gap-3">
       <SlotsEditorForm
         course={course}
         selectedGroup={selectedGroup}

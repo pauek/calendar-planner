@@ -15,7 +15,7 @@ type SelectorSemesterProps = {
 }
 export default function SemesterCourseSelector({ courses }: SelectorSemesterProps) {
   const path = usePathname()
-  
+
   return (
     <Select onValueChange={redirect} defaultValue={path}>
       <SelectTrigger className="w-[180px]">

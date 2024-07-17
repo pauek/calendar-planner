@@ -8,9 +8,10 @@ import { transpose } from "@/lib/utils"
 import DayTable from "./DayTable"
 import Session from "./Session"
 import TableCell from "./TableCell"
+import SlotsEditor from "@/components/SlotsEditor"
 
 type CalendarProps = {
-  name: string | undefined
+  name?: string
   year: number
   period: dates.Period
 }
@@ -19,6 +20,11 @@ export default async function Calendar({ name, year, period }: CalendarProps) {
   if (!dbSemester) {
     throw new Error(`Expected dbSemester to be !== null`)
   }
+
+  const specialDays = await dbGetSpecialDaysForYear(year, period)
+  const allDates = dates.allDatesForSemester(year, period)
+  const holidays = specialDays.filter((d) => d.type === "no-class")
+  const cdates = await dates.mergeWithHolidays(allDates, holidays)
 
   let course = undefined
   let groups: GroupWithSlots[] = []
@@ -44,19 +50,19 @@ export default async function Calendar({ name, year, period }: CalendarProps) {
     )
   }
 
-  const specialDays = await dbGetSpecialDaysForYear(year, period)
-  const allDates = dates.allDatesForSemester(year, period)
-  const holidays = specialDays.filter((d) => d.type === "no-class")
-  const cdates = await dates.mergeWithHolidays(allDates, holidays)
-
   return (
     <main className="p-6 w-fit flex flex-col gap-4 items-start select-none">
-      <Tabs defaultValue="setmanes" className="w-[400px]">
+      <Tabs defaultValue={course ? "groups" : "setmanes"} className="w-[400px]">
         <TabsList>
+          {course && <TabsTrigger value="groups">Grups</TabsTrigger>}
           <TabsTrigger value="setmanes">Setmanes</TabsTrigger>
           <TabsTrigger value="mesos">Mesos</TabsTrigger>
           <TabsTrigger value="sessions">Sessions</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="groups">
+          {course ? <SlotsEditor course={course} /> : <div>Selecciona un curs</div>}
+        </TabsContent>
 
         <TabsContent value="setmanes">
           {dates.semesterWeeks.autumn.map((week, i) => (

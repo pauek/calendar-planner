@@ -10,7 +10,6 @@ const firstMondayAfter = (year: number, month: number, day: number) => {
   let date = altdate2date(altDate(year, month, day))
   while (date.getDay() !== 1) {
     date.setDate(date.getDate() + 1)
-    console.log(date)
   }
   return date2altdate(date)
 }

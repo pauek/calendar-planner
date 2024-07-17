@@ -1,6 +1,6 @@
-import { Period } from "@/lib/dates"
+import { Period, periodText } from "@/lib/dates"
 import { dbCoursesGetAllForSemester } from "@/lib/db/courses"
-import CourseSelector from "./CourseSelector"
+import MenuLink from "./MenuLink"
 
 type PageProps = {
   params: {
@@ -17,9 +17,18 @@ export default async function Layout({ params, children }: PageProps) {
   const courses = await dbCoursesGetAllForSemester(year, period)
 
   return (
-    <main className="p-8">
-      <CourseSelector courses={courses} />
+    <div className="flex-1 flex flex-row gap-2 items-stretch">
+      <div className="border-r pt-2">
+        <MenuLink href={`/${year}/${period}`}>
+          <h2 className="pl-4 pr-6 mb-2 font-normal">{periodText(year, period)}</h2>
+        </MenuLink>
+        {courses.map((course) => (
+          <MenuLink key={course.id} href={`/${year}/${period}/${course.name}`} className="pl-4 pr-6">
+            {course.name}
+          </MenuLink>
+        ))}
+      </div>
       {children}
-    </main>
+    </div>
   )
 }

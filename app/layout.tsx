@@ -22,7 +22,7 @@ export default async function RootLayout({
     <html lang="en">
       <body className={cn(inter.className, "flex flex-col h-screen select-none")}>
         <Header semesters={semesters} />
-        <div className="overflow-x-scroll flex-1">{children}</div>
+        <div className="overflow-x-auto flex-1 flex flex-col">{children}</div>
       </body>
     </html>
   )

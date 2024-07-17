@@ -10,12 +10,7 @@ type TimeTableProps = {
   slots: Set<string>
   onClick: (day: string, hour: string) => void
 }
-export default function TimeTable({
-  groups,
-  lab,
-  slots,
-  onClick,
-}: TimeTableProps) {
+export default function TimeTable({ groups, lab, slots, onClick }: TimeTableProps) {
   const handleClick: MouseEventHandler<HTMLTableCellElement> = (e) => {
     const tableCell = e.target as HTMLTableCellElement
     const { day, hour } = tableCell.dataset
@@ -26,15 +21,15 @@ export default function TimeTable({
   }
 
   const slotPosition = (slot: Slot) => {
+    const width = SLOT_WIDTH * 1.015;
     const top = (slot.startHour - 8) * SLOT_HEIGHT + 1.65
-    const left = (slot.weekDay - 1) * SLOT_WIDTH + 1.98
-    const height =
-      (slot.endHour - slot.startHour) * SLOT_HEIGHT - 2 * SLOT_MARGIN
+    const left = (slot.weekDay - 1) * width + 2
+    const height = (slot.endHour - slot.startHour) * SLOT_HEIGHT - 2 * SLOT_MARGIN
     return {
       top: `${top}rem`,
       left: `${left}rem`,
       height: `${height}rem`,
-      width: `${SLOT_WIDTH - SLOT_MARGIN * 2 - 0.05}rem`,
+      width: `${width - SLOT_MARGIN * 2}rem`,
       margin: `${SLOT_MARGIN}rem`,
     }
   }
@@ -63,15 +58,10 @@ export default function TimeTable({
         <tbody>
           <tr>
             <td className="pr-2">
-              <div className="relative -bottom-[1.3em] text-xs text-right">
-                {WEEK_HOURS[0]}h
-              </div>
+              <div className="relative -bottom-[1.3em] text-xs text-right">{WEEK_HOURS[0]}h</div>
             </td>
             {WORK_DAYS.map((wd) => (
-              <th
-                className="text-center font-bold select-none border-none"
-                key={wd}
-              >
+              <th className="text-center font-bold select-none border-none" key={wd}>
                 {wd}
               </th>
             ))}
@@ -79,9 +69,7 @@ export default function TimeTable({
           {WEEK_HOURS.slice(1).map((h) => (
             <tr key={h}>
               <td className="pr-2">
-                <div className="select-none relative -bottom-[1.3em] text-xs text-right">
-                  {h}h
-                </div>
+                <div className="select-none relative -bottom-[1.3em] text-xs text-right">{h}h</div>
               </td>
               {WORK_DAYS.map((_, i) => (
                 <td
@@ -89,16 +77,17 @@ export default function TimeTable({
                   data-hour={h - 1}
                   data-day={WORK_DAYS[i]}
                   className={cn(
-                    "cursor-pointer hover:outline outline-gray-500 outline-2",
-                    "h-[2em]",
+                    "cursor-pointer",
+                    "w-[7rem]",
+                    "hover:outline outline-gray-500 outline-2",
+                    "h-[2rem]",
                     slots.has(hour2str(WORK_DAYS[i], String(h - 1))) &&
-                      (lab
-                        ? "bg-orange-600 opacity-60"
-                        : "bg-blue-600 opacity-60")
+                      (lab ? "bg-orange-600 opacity-60" : "bg-blue-600 opacity-60")
                   )}
-                  style={{ width: `${SLOT_WIDTH}rem` }}
                   onClick={handleClick}
-                ></td>
+                >
+                  <div style={{ width: `${SLOT_WIDTH}rem` }}></div>
+                </td>
               ))}
             </tr>
           ))}

@@ -1,9 +1,8 @@
-import SpecialDaysEditor from "@/components/SpecialDaysEditor"
-import SlotsEditor from "@/components/SlotsEditor"
-import { dbCourseGetById, dbCourseGetByName } from "@/lib/db/courses"
+import { Period } from "@/lib/dates"
+import { dbCourseGetByName } from "@/lib/db/courses"
 import { dbSemesterGet } from "@/lib/db/semester"
 import { notFound } from "next/navigation"
-import { Period } from "@/lib/dates"
+import Calendar from "../Calendar"
 
 type PageProps = {
   params: {
@@ -27,10 +26,8 @@ export default async function Home({ params }: PageProps) {
   }
 
   return (
-    <main className="p-6 flex flex-row">
-      <SpecialDaysEditor semester={semester} />
-      <div className="w-12"></div>
-      <SlotsEditor course={course} />
+    <main className="flex flex-row">
+      <Calendar name={name} year={year} period={period} />
     </main>
   )
 }
