@@ -2,7 +2,7 @@ import {
   AltDate,
   altdate2date,
   date2altdate,
-  month2period,
+  semesterForDate,
   Period,
   SpecialDayType,
 } from "@/lib/dates"
@@ -32,7 +32,7 @@ export const dbSpecialDayGet = async (d: AltDate, type: SpecialDayType) => {
 }
 
 export const dbSpecialDayAdd = async (d: AltDate, type: SpecialDayType) => {
-  const year_period = month2period(d)
+  const year_period = semesterForDate(d)
   return await db.specialDay.create({
     data: {
       date: altdate2date(d),

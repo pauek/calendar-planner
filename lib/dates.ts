@@ -222,7 +222,15 @@ const _month2period: (Period | null)[] = [
   "autumn", // 12
 ]
 
-export const month2period = (date: AltDate) => {
+export const _periodName = { autumn: "Q1", spring: "Q2" }
+
+export const periodText = (year: number, period: Period) => {
+  const y1 = year + (period === "spring" ? -1 : 0)
+  const y2 = y1 + 1;
+  return `${y1}/${y2} - ${_periodName[period]}`
+}
+
+export const semesterForDate = (date: AltDate) => {
   const period = _month2period[date.month]
   if (period === null) {
     throw new Error(`Month ${date.month} does not have a Period!`)

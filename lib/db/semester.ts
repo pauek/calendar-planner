@@ -1,4 +1,4 @@
-import { date2altdate, Period, SpecialDayType } from "../dates"
+import { altDate, altdate2date, date2altdate, Period, SpecialDayType } from "../dates"
 import { db } from "./db"
 
 const getSpecialDayOfType = (days: { date: Date; type: string }[], type: SpecialDayType) => {
@@ -6,10 +6,32 @@ const getSpecialDayOfType = (days: { date: Date; type: string }[], type: Special
   return result && date2altdate(result.date)
 }
 
+const firstMondayAfter = (year: number, month: number, day: number) => {
+  let date = altdate2date(altDate(year, month, day))
+  while (date.getDay() !== 1) {
+    date.setDate(date.getDate() + 1)
+    console.log(date)
+  }
+  return date2altdate(date)
+}
+
+const standarStartDate = (year: number, period: Period) => {
+  switch (period) {
+    case "autumn": {
+      return firstMondayAfter(year, 9, 1)
+    }
+    case "spring": {
+      return firstMondayAfter(year, 2, 1)
+    }
+  }
+}
+
 const toSemesterWithLimits = (smes: _SemesterWithLimits) => ({
   year: smes.year,
-  semester: smes.period,
-  start: getSpecialDayOfType(smes.specialDays, "semester-start"),
+  period: smes.period,
+  start:
+    getSpecialDayOfType(smes.specialDays, "semester-start") ||
+    standarStartDate(smes.year, smes.period as Period),
   end: getSpecialDayOfType(smes.specialDays, "semester-end"),
   classesEnd: getSpecialDayOfType(smes.specialDays, "classes-end"),
 })
@@ -31,8 +53,8 @@ const _dbSemesterGet = async (year: number, period: Period) =>
 
 export type SemesterWithLimits = NonNullable<ReturnType<typeof toSemesterWithLimits>>
 
-export async function dbSemesterGet(year: number, semester: Period) {
-  const result = await _dbSemesterGet(year, semester)
+export async function dbSemesterGet(year: number, period: Period) {
+  const result = await _dbSemesterGet(year, period)
   return result && toSemesterWithLimits(result)
 }
 

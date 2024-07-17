@@ -1,13 +1,11 @@
 "use client"
 
-import { useCourse } from "@/components/CourseProvider"
+import { date2altdate, semesterForDate } from "@/lib/dates"
 import { redirect } from "next/navigation"
 
 export default function Home() {
-  const { course, semester } = useCourse()
-  if (course && semester) {
-    redirect(`/courses/${course.id}`)
-  } else {
-    return <main>Choose a semester and a course...</main>
-  }
+  const now = new Date()
+  const date = date2altdate(now)
+  const { year, period } = semesterForDate(date)
+  redirect(`/${year}/${period}`)
 }

@@ -10,8 +10,28 @@ export async function dbGroupAdd(courseId: number, group: string) {
   })
 }
 
+export async function dbCourseGetByName(year: number, period: Period, name: string) {
+  return await db.course.findUnique({
+    where: { name_year_period: { name, year, period } },
+    include: {
+      groups: {
+        include: {
+          slots: {
+            select: {
+              weekDay: true,
+              startHour: true,
+              endHour: true,
+              lab: true,
+            },
+          },
+        },
+      },
+    },
+  })
+}
+
 export async function dbCourseGetById(courseId: number) {
-  const result = await db.course.findUnique({
+  return await db.course.findUnique({
     where: { id: courseId },
     include: {
       groups: {
@@ -28,12 +48,6 @@ export async function dbCourseGetById(courseId: number) {
       },
     },
   })
-  return (
-    result && {
-      ...result,
-      semester: result.period as Period,
-    }
-  )
 }
 
 export async function dbCoursesGetAllForSemester(year: number, period: Period) {

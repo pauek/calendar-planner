@@ -21,18 +21,15 @@ type MonthComponentProps = {
 
 export default async function MonthComponent({ semester, month }: MonthComponentProps) {
   const { year, start, end } = semester
-  if (start === undefined) {
-    throw new Error(`Semester missing start date!`)
-  }
 
   const weeks = groupIntoWeeks(allDatesForMonthBetween(year, month, start, end))
 
   const specialDays = await dbSpecialDaysGetForMonth(
     year,
-    semester.semester as Period,
+    semester.period as Period,
     month.month
   )
-  console.log(specialDays);
+
   const nonClass = new Set(specialDays.filter((d) => d.type === "no-class").map((d) => d.date.day))
 
   const DateCell = ({ date }: { date: MaybeAltDate }) => {

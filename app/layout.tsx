@@ -4,7 +4,6 @@ import { cn } from "@/lib/utils"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import { CourseProvider } from "@/components/CourseProvider"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -22,10 +21,8 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={cn(inter.className, "flex flex-col h-screen select-none")}>
-        <CourseProvider>
-          <Header semesters={semesters} />
-          <div className="overflow-x-scroll flex-1">{children}</div>
-        </CourseProvider>
+        <Header semesters={semesters} />
+        <div className="overflow-x-scroll flex-1">{children}</div>
       </body>
     </html>
   )

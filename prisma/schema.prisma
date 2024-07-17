@@ -45,6 +45,8 @@ model Course {
   semester Semester @relation(fields: [year, period], references: [year, period])
 
   groups Group[]
+
+  @@unique([name, year, period])
 }
 
 model Group {
