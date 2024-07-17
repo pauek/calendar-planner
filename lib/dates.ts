@@ -287,7 +287,7 @@ export const allDatesForMonthBetween = (
 export type CalendarDate = {
   date: AltDate
   dow: number
-  holiday: boolean
+  special: SpecialDayType | undefined
 }
 export const mergeWithHolidays = async (
   dates: AltDate[],
@@ -296,7 +296,7 @@ export const mergeWithHolidays = async (
   const result = dates.map((date) => ({
     date,
     dow: altdate2date(date).getDay(),
-    holiday: !!specialDays.find((d) => equalDates(d.date, date)),
+    special: specialDays.find((d) => equalDates(d.date, date))?.type,
   }))
   return result
 }
@@ -406,7 +406,7 @@ export const groupSlots = (group: GroupWithSlots | undefined, lab: boolean) => {
 export type SessionInfo = {
   group: GroupWithSlots
   date: AltDate
-  holiday: boolean
+  special: SpecialDayType | undefined
   dow: number
   text: string
   shift?: number
@@ -426,7 +426,7 @@ export const groupSessions = (
   const { slots } = group
   const weekdayMap = new Map<number, boolean>(slots.map((s) => [s.weekDay, s.lab]))
 
-  const thereIsClass = (d: CalendarDate) => !d.holiday && isWithin(classesBegin, d.date, classesEnd)
+  const thereIsClass = (d: CalendarDate) => !d.special && isWithin(classesBegin, d.date, classesEnd)
 
   let currL = 1
   let currT = 1

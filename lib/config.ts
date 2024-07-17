@@ -1,4 +1,4 @@
-import { altDate, AltDate, mkMonth, Period, SemesterMonth } from "./dates"
+import { AltDate, Period, SpecialDayType } from "./dates"
 
 export const YEAR = 2024
 export const PERIOD: Period = "autumn"

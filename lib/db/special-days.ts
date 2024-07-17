@@ -14,7 +14,7 @@ export const dbSpecialDaysGetForSemester = async (year: number, period: Period) 
   })
   return result.map((d) => ({
     date: date2altdate(d.date),
-    type: d.type,
+    type: d.type as SpecialDayType,
   }))
 }
 

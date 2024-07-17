@@ -21,14 +21,7 @@ type MonthComponentProps = {
   type: SpecialDayType
 }
 
-const colorTable: Record<SpecialDayType, string> = {
-  "no-class": "bg-blue-200",
-  "partial-exam": "bg-green-200",
-  "final-exam": "bg-red-200",
-  "semester-start": "bg-yellow-200",
-  "semester-end": "bg-yellow-200",
-  "classes-end": "bg-yellow-200",
-}
+
 
 export default function MonthComponent({
   specialDays,
@@ -55,9 +48,7 @@ export default function MonthComponent({
         background = "bg-gray-300"
       } else if (special.has(date.day)) {
         const type = special.get(date.day)
-        if (type) {
-          background = colorTable[type]
-        }
+        background = `bg-${type}`;
       }
     }
     return (

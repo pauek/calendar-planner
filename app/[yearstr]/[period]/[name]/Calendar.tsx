@@ -23,8 +23,7 @@ export default async function Calendar({ name, year, period }: CalendarProps) {
 
   const specialDays = await dbGetSpecialDaysForYear(year, period)
   const allDates = dates.allDatesForSemester(year, period)
-  const holidays = specialDays.filter((d) => d.type === "no-class")
-  const cdates = await dates.mergeWithHolidays(allDates, holidays)
+  const cdates = await dates.mergeWithHolidays(allDates, specialDays)
 
   let course = undefined
   let groups: GroupWithSlots[] = []

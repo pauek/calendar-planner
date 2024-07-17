@@ -3,10 +3,11 @@
 import MonthComponent from "@/components/MonthComponent"
 import { Period, semesterMonths, SpecialDayType } from "@/lib/dates"
 import { SemesterWithLimits } from "@/lib/db/semester"
-import { RadioGroup, RadioGroupItem } from "./ui/radio-group"
-import { Label } from "./ui/label"
-import { useState } from "react"
 import { SpecialDay } from "@/lib/db/special-days"
+import { cn } from "@/lib/utils"
+import { useState } from "react"
+import { Label } from "./ui/label"
+import { RadioGroup, RadioGroupItem } from "./ui/radio-group"
 
 type SpecialDaysEditorProps = {
   semester: SemesterWithLimits
@@ -42,7 +43,7 @@ export default function SpecialDaysEditor({ semester, specialDays }: SpecialDays
               htmlFor="no-class"
               className="flex flex-row gap-3 items-center rounded-md border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
             >
-              <div className="w-10 h-6 border border-black bg-blue-300"></div>
+              <div className={cn("w-10 h-6 border border-black", "bg-no-class")}></div>
               Dies no lectius
             </Label>
           </div>
@@ -52,7 +53,7 @@ export default function SpecialDaysEditor({ semester, specialDays }: SpecialDays
               htmlFor="partial-exam"
               className="flex flex-row gap-3 items-center rounded-md border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
             >
-              <div className="w-10 h-6 border border-black bg-green-300"></div>
+              <div className={cn("w-10 h-6 border border-black", "bg-partial-exam")}></div>
               Exàmens Parcials
             </Label>
           </div>
@@ -62,7 +63,7 @@ export default function SpecialDaysEditor({ semester, specialDays }: SpecialDays
               htmlFor="final-exam"
               className="flex flex-row gap-3 items-center rounded-md border-2 border-muted bg-popover p-3 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary"
             >
-              <div className="w-10 h-6 border border-black bg-red-300"></div>
+              <div className={cn("w-10 h-6 border border-black", "bg-final-exam")}></div>
               Exàmens Finals
             </Label>
           </div>

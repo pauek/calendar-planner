@@ -2,7 +2,7 @@ import { Period } from "@/lib/dates"
 import { dbCourseGetByName } from "@/lib/db/courses"
 import { dbSemesterGet } from "@/lib/db/semester"
 import { notFound } from "next/navigation"
-import Calendar from "../Calendar"
+import Calendar from "./Calendar"
 
 type PageProps = {
   params: {

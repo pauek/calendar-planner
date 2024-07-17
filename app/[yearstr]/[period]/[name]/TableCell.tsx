@@ -52,8 +52,8 @@ export default function TableCell({
     let bg = ""
     if (dates.isWeekend(cdate.date)) {
       bg = "bg-gray-300"
-    } else if (cdate.holiday) {
-      bg = "bg-blue-200"
+    } else if (cdate.special) {
+      bg = `bg-${cdate.special}`
     }
 
     return <td className={cn(common, b, bcolor, bg, className)}>{children}</td>
