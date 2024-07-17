@@ -4,12 +4,12 @@ import {
   isWeekend,
   MaybeAltDate,
   mondayOfWeek,
-  Period,
   SemesterMonth,
+  SpecialDayType,
   weekDifference,
 } from "@/lib/dates"
 import { SemesterWithLimits } from "@/lib/db/semester"
-import { dbSpecialDaysGetForMonth } from "@/lib/db/special-days"
+import { SpecialDay } from "@/lib/db/special-days"
 import { cn } from "@/lib/utils"
 import HolidayButton from "./HolidayButton"
 import MonthName from "./MonthName"
@@ -17,20 +17,34 @@ import MonthName from "./MonthName"
 type MonthComponentProps = {
   semester: SemesterWithLimits
   month: SemesterMonth
+  specialDays: SpecialDay[]
+  type: SpecialDayType
 }
 
-export default async function MonthComponent({ semester, month }: MonthComponentProps) {
+const colorTable: Record<SpecialDayType, string> = {
+  "no-class": "bg-blue-200",
+  "partial-exam": "bg-green-200",
+  "final-exam": "bg-red-200",
+  "semester-start": "bg-yellow-200",
+  "semester-end": "bg-yellow-200",
+  "classes-end": "bg-yellow-200",
+}
+
+export default function MonthComponent({
+  specialDays,
+  semester,
+  month,
+  type,
+}: MonthComponentProps) {
   const { year, start, end } = semester
 
   const weeks = groupIntoWeeks(allDatesForMonthBetween(year, month, start, end))
 
-  const specialDays = await dbSpecialDaysGetForMonth(
-    year,
-    semester.period as Period,
-    month.month
+  const special = new Map<number, SpecialDayType>(
+    specialDays
+      .filter((d) => d.date.month === month.month)
+      .map((d) => [d.date.day, d.type as SpecialDayType])
   )
-
-  const nonClass = new Set(specialDays.filter((d) => d.type === "no-class").map((d) => d.date.day))
 
   const DateCell = ({ date }: { date: MaybeAltDate }) => {
     let border = ""
@@ -39,11 +53,18 @@ export default async function MonthComponent({ semester, month }: MonthComponent
       border = "border border-black"
       if (isWeekend(date)) {
         background = "bg-gray-300"
-      } else if (nonClass.has(date.day)) {
-        background = "bg-blue-300"
+      } else if (special.has(date.day)) {
+        const type = special.get(date.day)
+        if (type) {
+          background = colorTable[type]
+        }
       }
     }
-    return <td className={cn(border, background)}>{date && <HolidayButton date={date} />}</td>
+    return (
+      <td className={cn(border, background)}>
+        {date && <HolidayButton date={date} type={type} />}
+      </td>
+    )
   }
 
   const WeekRow = ({ week }: { week: MaybeAltDate[] }) => {

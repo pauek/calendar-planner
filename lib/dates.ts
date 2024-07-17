@@ -34,7 +34,13 @@ export type Interval = {
 
 export type Period = "spring" | "autumn"
 
-export type SpecialDayType = "no-class" | "semester-start" | "semester-end" | "classes-end"
+export type SpecialDayType =
+  | "no-class"
+  | "semester-start"
+  | "semester-end"
+  | "classes-end"
+  | "partial-exam"
+  | "final-exam"
 
 export type SemesterMonth = {
   month: number
@@ -226,7 +232,7 @@ export const _periodName = { autumn: "Q1", spring: "Q2" }
 
 export const periodText = (year: number, period: Period) => {
   const y1 = year + (period === "spring" ? -1 : 0)
-  const y2 = y1 + 1;
+  const y2 = y1 + 1
   return `${y1}/${y2} - ${_periodName[period]}`
 }
 

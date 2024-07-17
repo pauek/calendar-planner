@@ -1,7 +1,7 @@
 import SpecialDaysEditor from "@/components/SpecialDaysEditor"
 import { Period } from "@/lib/dates"
-import { dbCoursesGetAllForSemester } from "@/lib/db/courses"
 import { dbSemesterGet } from "@/lib/db/semester"
+import { dbSpecialDaysGetForSemester } from "@/lib/db/special-days"
 
 type PageProps = {
   params: {
@@ -18,9 +18,11 @@ export default async function Page({ params }: PageProps) {
     throw new Error(`Expected to find semester for course ${name}`)
   }
 
+  const specialDays = await dbSpecialDaysGetForSemester(year, semester.period as Period)
+
   return (
     <>
-      <SpecialDaysEditor semester={semester} />
+      <SpecialDaysEditor semester={semester} specialDays={specialDays} />
     </>
   )
 }

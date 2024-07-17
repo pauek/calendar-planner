@@ -1,10 +1,10 @@
 "use server"
 
-import { AltDate } from "@/lib/dates"
+import { AltDate, SpecialDayType } from "@/lib/dates"
 import { dbSpecialDayToggle } from "@/lib/db/special-days"
 import { revalidatePath } from "next/cache"
 
-export async function actionToggleHoliday(d: AltDate) {
-  await dbSpecialDayToggle(d, "no-class")
+export async function actionToggleSpecialDay(d: AltDate, type: SpecialDayType) {
+  await dbSpecialDayToggle(d, type)
   revalidatePath("/holidays")
 }
