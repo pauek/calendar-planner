@@ -26,7 +26,8 @@ export default async function Home({ params }: PageProps) {
   }
 
   return (
-    <main className="flex flex-row">
+    <main className="flex-1 flex flex-col p-6 items-stretch">
+      <h1>{course.name}</h1>
       <Calendar name={name} year={year} period={period} />
     </main>
   )

@@ -21,7 +21,7 @@ export default function TimeTable({ groups, lab, slots, onClick }: TimeTableProp
   }
 
   const slotPosition = (slot: Slot) => {
-    const width = SLOT_WIDTH * 1.015;
+    const width = SLOT_WIDTH * 1.015
     const top = (slot.startHour - 8) * SLOT_HEIGHT + 1.65
     const left = (slot.weekDay - 1) * width + 2
     const height = (slot.endHour - slot.startHour) * SLOT_HEIGHT - 2 * SLOT_MARGIN
@@ -35,15 +35,15 @@ export default function TimeTable({ groups, lab, slots, onClick }: TimeTableProp
   }
 
   return (
-    <div className="relative">
+    <div className="relative z-0">
       {groups.map((g, i) =>
         g.slots.map((slot) => (
           <div
             className={cn(
               "absolute -z-10 text-black",
-              "border border-gray-300 opacity-50 rounded",
+              "border border-gray-400 opacity-60 rounded",
               "h-[2em] flex flex-col items-center justify-center",
-              slot.lab ? "bg-orange-100" : "bg-blue-100"
+              slot.lab ? "bg-orange-200" : "bg-blue-200"
             )}
             style={slotPosition(slot)}
             key={i}
@@ -54,14 +54,14 @@ export default function TimeTable({ groups, lab, slots, onClick }: TimeTableProp
         ))
       )}
 
-      <table className="border-collapse timetable mb-6 z-10">
+      <table className="border-collapse mb-6 z-50">
         <tbody>
           <tr>
             <td className="pr-2">
               <div className="relative -bottom-[1.3em] text-xs text-right">{WEEK_HOURS[0]}h</div>
             </td>
             {WORK_DAYS.map((wd) => (
-              <th className="text-center font-bold select-none border-none" key={wd}>
+              <th className="text-center select-none border-none" key={wd}>
                 {wd}
               </th>
             ))}

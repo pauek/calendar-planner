@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { CourseWithGroups } from "@/lib/db/courses"
 import { useRef } from "react"
+import { DatePicker } from "./DatePicker"
 
 type SlotsEditorFormProps = {
   course: NonNullable<CourseWithGroups>
@@ -41,14 +42,14 @@ export default function SlotsEditorForm({
       </form>
       <div className="flex flex-row gap-2">
         <OptionSelector
-          options={["T", "L"]}
-          selected={lab ? 1 : 0}
-          onSelect={(n) => onSetLab(n == 1)}
-        />
-        <OptionSelector
           options={course?.groups.map((g) => g.group)}
           selected={selectedGroup}
           onSelect={onSelectGroup}
+        />
+        <OptionSelector
+          options={["T", "L"]}
+          selected={lab ? 1 : 0}
+          onSelect={(n) => onSetLab(n == 1)}
         />
       </div>
     </>

@@ -1,14 +1,15 @@
 import MonthName from "@/components/MonthName"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import * as dates from "@/lib/dates"
-import { dbCourseGetByName, GroupWithSlots } from "@/lib/db/courses"
+import { dbCourseGetByName, dbCourseGetExams, Exams, GroupWithSlots } from "@/lib/db/courses"
 import { dbSemesterGet } from "@/lib/db/semester"
-import { dbSpecialDaysGetForSemester as dbGetSpecialDaysForYear } from "@/lib/db/special-days"
+import { dbSpecialDayAdd, dbSpecialDaysGetForSemester, SpecialDay } from "@/lib/db/special-days"
 import { transpose } from "@/lib/utils"
 import DayTable from "./DayTable"
 import Session from "./Session"
 import TableCell from "./TableCell"
 import SlotsEditor from "@/components/SlotsEditor"
+import { CalendarDate } from "@/lib/dates"
 
 type CalendarProps = {
   name?: string
@@ -21,37 +22,43 @@ export default async function Calendar({ name, year, period }: CalendarProps) {
     throw new Error(`Expected dbSemester to be !== null`)
   }
 
-  const specialDays = await dbGetSpecialDaysForYear(year, period)
   const allDates = dates.allDatesForSemester(year, period)
-  const cdates = await dates.mergeWithHolidays(allDates, specialDays)
 
   let course = undefined
   let groups: GroupWithSlots[] = []
+  let exams: Exams = {}
   let allGroupsSessions: dates.SessionInfo[][] = []
   let onlyClassSessions: dates.SessionInfo[][] = []
+  let courseSpecialDays: SpecialDay[] = []
+  let cdates: CalendarDate[] = []
+
+  const semesterSpecialDays = await dbSpecialDaysGetForSemester(year, period)
 
   if (name) {
     course = await dbCourseGetByName(year, period as dates.Period, name)
-    if (course === null) {
-      throw new Error(`Course ${name} not found!!`)
+    if (course) {
+      courseSpecialDays = await dbSpecialDaysGetForSemester(year, period, course.id)
+      groups = course.groups
+      exams = await dbCourseGetExams(course.id)
+      console.log(exams)
     }
-
-    groups = course.groups
-
-    allGroupsSessions = groups.map((group) =>
-      dates.groupSessions(dbSemester.start, dbSemester.classesEnd, cdates, group)
-    )
-
-    onlyClassSessions = groups.map((group) =>
-      dates.groupSessions(dbSemester.start, dbSemester.classesEnd, cdates, group, {
-        includeNonClasses: false,
-      })
-    )
   }
 
+  cdates = await dates.mergeWithHolidays(allDates, [...semesterSpecialDays, ...courseSpecialDays])
+
+  allGroupsSessions = groups.map((group) =>
+    dates.groupSessions(dbSemester.start, dbSemester.classesEnd, cdates, group)
+  )
+
+  onlyClassSessions = groups.map((group) =>
+    dates.groupSessions(dbSemester.start, dbSemester.classesEnd, cdates, group, {
+      includeNonClasses: false,
+    })
+  )
+
   return (
-    <main className="p-6 w-fit flex flex-col gap-4 items-start select-none">
-      <Tabs defaultValue={course ? "groups" : "setmanes"} className="w-[400px]">
+    <main className="flex-1 flex flex-col gap-4 items-start select-none">
+      <Tabs defaultValue="groups">
         <TabsList>
           {course && <TabsTrigger value="groups">Grups</TabsTrigger>}
           <TabsTrigger value="setmanes">Setmanes</TabsTrigger>
@@ -60,13 +67,14 @@ export default async function Calendar({ name, year, period }: CalendarProps) {
         </TabsList>
 
         <TabsContent value="groups">
-          {course ? <SlotsEditor course={course} /> : <div>Selecciona un curs</div>}
+          {course ? <SlotsEditor course={course} exams={exams} /> : <div>Selecciona un curs</div>}
         </TabsContent>
 
         <TabsContent value="setmanes">
           {dates.semesterWeeks.autumn.map((week, i) => (
             <div key={i} className="mt-8">
               <DayTable
+                weekTitles={true}
                 dbSemester={dbSemester}
                 groups={groups}
                 cdates={cdates.filter((d) => dates.isWithin(week.start, d.date, week.end))}
@@ -84,6 +92,7 @@ export default async function Calendar({ name, year, period }: CalendarProps) {
               <div key={i} className="mb-2">
                 <MonthName className="pl-[1.7rem]" month={month} />
                 <DayTable
+                  weekTitles={false}
                   dbSemester={dbSemester}
                   groups={groups}
                   cdates={cdates.filter((d) => dates.dateInMonth(d.date, year, month))}

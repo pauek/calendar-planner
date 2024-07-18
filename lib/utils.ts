@@ -18,19 +18,19 @@ export const setToggleElement = <T>(set: Set<T>, elem: T) => {
 }
 
 export const setDifference = <T>(a: Set<T>, b: Set<T>) => {
-  const result: Set<T> = new Set<T>();
+  const result: Set<T> = new Set<T>()
   for (const elem of a) {
     if (!b.has(elem)) {
-      result.add(elem);
+      result.add(elem)
     }
   }
-  return result;
+  return result
 }
 
 export const equalSets = <T>(a: Set<T>, b: Set<T>) => {
   try {
     const d1 = setDifference(a, b)
-    const d2 = setDifference(b, a);
+    const d2 = setDifference(b, a)
     return d1.size == 0 && d2.size == 0
   } catch (e) {
     console.log(a, b)
@@ -55,10 +55,22 @@ export function transpose<T>(matrix: T[][]): T[][] {
 
 const rCoursePath = /^\/courses\/(\d+)\/.*$/
 export const getCourseIdFromPathname = (path: string) => {
-  const match = path.match(rCoursePath);
+  const match = path.match(rCoursePath)
   if (match != null) {
-    return Number(match[1]);
+    return Number(match[1])
   } else {
-    return null;
+    return null
   }
+}
+
+export const groupsOf = <T>(n: number, array: T[]) => {
+  const result: T[][] = []
+  for (let i = 0; i < array.length; i += n) {
+    const tuple: T[] = []
+    for (let j = 0; j < n; j++) {
+      tuple.push(array[i + j])
+    }
+    result.push(tuple)
+  }
+  return result
 }

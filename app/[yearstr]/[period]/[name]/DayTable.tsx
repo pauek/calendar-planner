@@ -7,12 +7,19 @@ import TableCell from "./TableCell"
 import Session from "./Session"
 
 type DayTableProps = {
+  weekTitles: boolean
   dbSemester: SemesterWithLimits
   sessions: dates.SessionInfo[][]
   cdates: CalendarDate[]
   groups: GroupWithSlots[] | undefined
 }
-export default function DayTable({ dbSemester, sessions, cdates, groups }: DayTableProps) {
+export default function DayTable({
+  weekTitles,
+  dbSemester,
+  sessions,
+  cdates,
+  groups,
+}: DayTableProps) {
   return (
     <table className="border-collapse select-none">
       <tbody>
@@ -26,7 +33,7 @@ export default function DayTable({ dbSemester, sessions, cdates, groups }: DayTa
               cdate={cdate}
               header={true}
             >
-              {dbSemester.start && cdate.dow === 1 && (
+              {weekTitles && dbSemester.start && cdate.dow === 1 && (
                 <div
                   className={cn(
                     "absolute -top-[1.1rem] -left-[.3em] w-8 text-center text-xs",

@@ -1,5 +1,6 @@
 import { Interval, Period, weekDay2index } from "@/lib/dates"
 import { db } from "@/lib/db/db"
+import { dbSpecialDayGet, dbSpecialDayGetAllOfType } from "./special-days"
 
 export async function dbGroupAdd(courseId: number, group: string) {
   return await db.course.update({
@@ -91,3 +92,18 @@ export async function dbGroupSetIntervals(groupId: number, intervals: Interval[]
     },
   })
 }
+
+export async function dbCourseGetExams(courseId: number) {
+  const [finalExam] = await dbSpecialDayGetAllOfType("final-exam", courseId)
+  const [partialExam] = await dbSpecialDayGetAllOfType("partial-exam", courseId)
+  let result: { finalExam?: Date, partialExam?: Date } = {}
+  if (finalExam) {
+    result.finalExam = finalExam.date
+  }
+  if (partialExam) {
+    result.partialExam = partialExam.date
+  }
+  return result;
+}
+
+export type Exams = Awaited<ReturnType<typeof dbCourseGetExams>>;

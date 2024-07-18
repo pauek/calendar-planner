@@ -24,18 +24,6 @@ model Semester {
   @@id([year, period])
 }
 
-model SpecialDay {
-  id     Int      @id @default(autoincrement())
-  date   DateTime
-  type   String
-  year   Int
-  period String
-
-  semester Semester @relation(fields: [year, period], references: [year, period])
-
-  @@unique([date, type])
-}
-
 model Course {
   id     Int    @id @default(autoincrement())
   name   String
@@ -44,9 +32,24 @@ model Course {
 
   semester Semester @relation(fields: [year, period], references: [year, period])
 
-  groups Group[]
+  groups      Group[]
+  specialDays SpecialDay[]
 
   @@unique([name, year, period])
+}
+
+model SpecialDay {
+  id       Int      @id @default(autoincrement())
+  date     DateTime
+  type     String
+  year     Int
+  period   String
+  courseId Int?
+
+  semester Semester @relation(fields: [year, period], references: [year, period])
+  course   Course?  @relation(fields: [courseId], references: [id])
+
+  @@unique([date, type, courseId])
 }
 
 model Group {

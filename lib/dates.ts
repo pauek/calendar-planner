@@ -39,6 +39,8 @@ export type SpecialDayType =
   | "semester-start"
   | "semester-end"
   | "classes-end"
+  | "partial-exam-period"
+  | "final-exam-period"
   | "partial-exam"
   | "final-exam"
 
@@ -133,7 +135,7 @@ export const yearMonth = (year: number, month: SemesterMonth) => ({
   month: month.month,
 })
 
-export const getSemester = (d: AltDate) => (d.month >= 2 && d.month < 8 ? "sprint" : "autumn")
+export const getPeriod = (d: AltDate) => (d.month >= 2 && d.month < 8 ? "sprint" : "autumn")
 
 export const nextMonth = (m: SemesterMonth): SemesterMonth => {
   if (m.month < 12) {
