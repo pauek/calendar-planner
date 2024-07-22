@@ -1,3 +1,4 @@
+import { SeparatorConfig } from "tailwindcss/types/config"
 import { GroupWithSlots } from "./db/courses"
 import { SpecialDay } from "./db/special-days"
 import { titleize } from "./utils"
@@ -44,6 +45,17 @@ export type SpecialDayType =
   | "partial-exam"
   | "final-exam"
 
+const specialDayPriority: Record<SpecialDayType, number> = {
+  "no-class": 0,
+  "semester-start": 1,
+  "semester-end": 1,
+  "classes-end": 1,
+  "final-exam-period": 1,
+  "partial-exam-period": 1,
+  "final-exam": 2,
+  "partial-exam": 2,
+}
+
 export type SemesterMonth = {
   month: number
   yearDif: number
@@ -81,6 +93,10 @@ export type SemesterWeek = {
 
 export const isContinuation = (interval: Interval | undefined, weekday: WeekDay, hour: number) => {
   return interval && interval.weekDay === weekday && interval.endHour === hour
+}
+
+export const sortSpecialDayTypes = (types: SpecialDayType[]): void => {
+  types.sort((a, b) => specialDayPriority[b] - specialDayPriority[a])
 }
 
 export const weekday = (d: AltDate) => altdate2date(d).getDay()
@@ -289,17 +305,18 @@ export const allDatesForMonthBetween = (
 export type CalendarDate = {
   date: AltDate
   dow: number
-  special: SpecialDayType | undefined
+  special: SpecialDayType[]
 }
 export const mergeWithHolidays = async (
   dates: AltDate[],
   specialDays: SpecialDay[]
 ): Promise<CalendarDate[]> => {
-  const result = dates.map((date) => ({
-    date,
-    dow: altdate2date(date).getDay(),
-    special: specialDays.find((d) => equalDates(d.date, date))?.type,
-  }))
+  const result = dates.map((date) => {
+    const dow = altdate2date(date).getDay()
+    const special = specialDays.filter((d) => equalDates(d.date, date)).map((d) => d.type)
+    sortSpecialDayTypes(special)
+    return { date, dow, special }
+  })
   return result
 }
 
@@ -408,7 +425,7 @@ export const groupSlots = (group: GroupWithSlots | undefined, lab: boolean) => {
 export type SessionInfo = {
   group: GroupWithSlots
   date: AltDate
-  special: SpecialDayType | undefined
+  special: SpecialDayType[]
   dow: number
   text: string
   shift?: number
@@ -428,7 +445,8 @@ export const groupSessions = (
   const { slots } = group
   const weekdayMap = new Map<number, boolean>(slots.map((s) => [s.weekDay, s.lab]))
 
-  const thereIsClass = (d: CalendarDate) => !d.special && isWithin(classesBegin, d.date, classesEnd)
+  const thereIsClass = (d: CalendarDate) =>
+    d.special.length === 0 && isWithin(classesBegin, d.date, classesEnd)
 
   let currL = 1
   let currT = 1

@@ -52,8 +52,18 @@ export default function TableCell({
     let bg = ""
     if (dates.isWeekend(cdate.date)) {
       bg = "bg-gray-300"
-    } else if (cdate.special) {
-      bg = `bg-${cdate.special}`
+    } else if (cdate.special.length > 0) {
+      switch (cdate.special[0]) {
+        case "partial-exam":
+          bg = `bg-partial-exam`
+          break
+        case "final-exam":
+          bg = `bg-final-exam`
+          break
+        default:
+          // Tailwind generates the rest of classes because they are used somewhere else as constants
+          bg = `bg-${cdate.special[0]}`
+      }
     }
 
     return <td className={cn(common, b, bcolor, bg, className)}>{children}</td>

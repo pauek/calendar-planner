@@ -52,10 +52,10 @@ const config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        "partial-exam-period": "#9aff32",
-        "final-exam-period": "#c4b5fd",
         "final-exam": "#ff0000",
         "partial-exam": "#ff0000",
+        "final-exam-period": "#c4b5fd",
+        "partial-exam-period": "#9aff32",
         "no-class": "#00cdff",
 
       },

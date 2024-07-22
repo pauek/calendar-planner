@@ -1,22 +1,22 @@
 import MonthName from "@/components/MonthName"
+import SlotsEditor from "@/components/SlotsEditor"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import * as dates from "@/lib/dates"
+import { CalendarDate } from "@/lib/dates"
 import { dbCourseGetByName, dbCourseGetExams, Exams, GroupWithSlots } from "@/lib/db/courses"
 import { dbSemesterGet } from "@/lib/db/semester"
-import { dbSpecialDayAdd, dbSpecialDaysGetForSemester, SpecialDay } from "@/lib/db/special-days"
+import { dbSpecialDaysGetForSemester, SpecialDay } from "@/lib/db/special-days"
 import { transpose } from "@/lib/utils"
 import DayTable from "./DayTable"
 import Session from "./Session"
 import TableCell from "./TableCell"
-import SlotsEditor from "@/components/SlotsEditor"
-import { CalendarDate } from "@/lib/dates"
 
-type CalendarProps = {
+type CourseCalendarProps = {
   name?: string
   year: number
   period: dates.Period
 }
-export default async function Calendar({ name, year, period }: CalendarProps) {
+export default async function CourseCalendar({ name, year, period }: CourseCalendarProps) {
   const dbSemester = await dbSemesterGet(year, period)
   if (!dbSemester) {
     throw new Error(`Expected dbSemester to be !== null`)

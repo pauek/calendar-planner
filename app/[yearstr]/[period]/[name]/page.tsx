@@ -2,7 +2,7 @@ import { Period } from "@/lib/dates"
 import { dbCourseGetByName } from "@/lib/db/courses"
 import { dbSemesterGet } from "@/lib/db/semester"
 import { notFound } from "next/navigation"
-import Calendar from "./Calendar"
+import CourseCalendar from "./CourseCalendar"
 
 type PageProps = {
   params: {
@@ -28,7 +28,7 @@ export default async function Home({ params }: PageProps) {
   return (
     <main className="flex-1 flex flex-col p-6 items-stretch">
       <h1>{course.name}</h1>
-      <Calendar name={name} year={year} period={period} />
+      <CourseCalendar name={name} year={year} period={period} />
     </main>
   )
 }

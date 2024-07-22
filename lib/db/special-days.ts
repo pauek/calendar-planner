@@ -11,7 +11,7 @@ import { db } from "@/lib/db/db"
 export const dbSpecialDaysGetForSemester = async (
   year: number,
   period: Period,
-  courseId?: number
+  courseId: number | null = null
 ) => {
   const result = await db.specialDay.findMany({
     where: { year, period, courseId },
@@ -34,17 +34,17 @@ export const dbSpecialDaysGetForMonth = async (
   return specialDays.filter((sd) => sd.date.month === month)
 }
 
-export const dbSpecialDayGet = async (d: AltDate, type: SpecialDayType, courseId?: number) => {
+export const dbSpecialDayGet = async (d: AltDate, type: SpecialDayType, courseId: number | null = null) => {
   return await db.specialDay.findFirst({
     where: { date: altdate2date(d), type, courseId },
   })
 }
 
-export const dbSpecialDayGetAllOfType = async (type: SpecialDayType, courseId?: number) => {
+export const dbSpecialDayGetAllOfType = async (type: SpecialDayType, courseId: number | null = null) => {
   return await db.specialDay.findMany({ where: { type, courseId } })
 }
 
-export const dbSpecialDayAdd = async (d: AltDate, type: SpecialDayType, courseId?: number) => {
+export const dbSpecialDayAdd = async (d: AltDate, type: SpecialDayType, courseId: number | null = null) => {
   const year_period = semesterForDate(d)
   let courseConnect = {}
   if (courseId) {
@@ -77,18 +77,24 @@ export const dbSpecialDayUpdate = async (d: AltDate, type: SpecialDayType, cours
   })
 }
 
-export const dbSpecialDayDelete = async (d: AltDate, type: SpecialDayType, courseId?: number) => {
+export const dbSpecialDayDelete = async (d: AltDate, type: SpecialDayType, courseId: number | null = null) => {
   return await db.specialDay.deleteMany({
     where: { date: altdate2date(d), type, courseId },
   })
 }
 
-export const dbSpecialDayToggle = async (d: AltDate, type: SpecialDayType, courseId?: number) => {
+export const dbSpecialDayDeleteAll = async (type: SpecialDayType, courseId: number | null = null) => {
+  return await db.specialDay.deleteMany({
+    where: { type, courseId },
+  })
+}
+
+export const dbSpecialDayToggle = async (d: AltDate, type: SpecialDayType, courseId: number | null = null) => {
   const existingDay = await dbSpecialDayGet(d, type, courseId)
   if (existingDay !== null) {
-    return dbSpecialDayDelete(d, type)
+    return dbSpecialDayDelete(d, type, courseId)
   } else {
-    return dbSpecialDayAdd(d, type)
+    return dbSpecialDayAdd(d, type, courseId)
   }
 }
 

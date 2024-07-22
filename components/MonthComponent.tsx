@@ -5,6 +5,7 @@ import {
   MaybeAltDate,
   mondayOfWeek,
   SemesterMonth,
+  sortSpecialDayTypes,
   SpecialDayType,
   weekDifference,
 } from "@/lib/dates"
@@ -21,8 +22,6 @@ type MonthComponentProps = {
   type: SpecialDayType
 }
 
-
-
 export default function MonthComponent({
   specialDays,
   semester,
@@ -33,11 +32,17 @@ export default function MonthComponent({
 
   const weeks = groupIntoWeeks(allDatesForMonthBetween(year, month, start, end))
 
-  const special = new Map<number, SpecialDayType>(
-    specialDays
-      .filter((d) => d.date.month === month.month)
-      .map((d) => [d.date.day, d.type as SpecialDayType])
-  )
+  const special = new Map<number, SpecialDayType[]>()
+  for (const spday of specialDays.filter(d => d.date.month === month.month)) {
+    const types = special.get(spday.date.day)
+    if (types === undefined) {
+      special.set(spday.date.day, [spday.type])
+    } else {
+      types.push(spday.type)
+      sortSpecialDayTypes(types)
+    }
+  }
+  console.log(special);
 
   const DateCell = ({ date }: { date: MaybeAltDate }) => {
     let border = ""
@@ -47,8 +52,10 @@ export default function MonthComponent({
       if (isWeekend(date)) {
         background = "bg-gray-300"
       } else if (special.has(date.day)) {
-        const type = special.get(date.day)
-        background = `bg-${type}`;
+        const types = special.get(date.day)
+        if (types && types.length > 0) {
+          background = `bg-${types[0]}`
+        }
       }
     }
     return (

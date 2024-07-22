@@ -16,7 +16,7 @@ export default function MenuLink({ href, className, children }: MenuLinkProps) {
 
   return (
     <Link href={href} className="font-semibold text-xl">
-      <div className={cn(path === href ? "bg-blue-300" : "", className)}>{children}</div>
+      <div className={cn("py-1", path === href ? "bg-primary text-background" : "", className)}>{children}</div>
     </Link>
   )
 }

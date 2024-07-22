@@ -16,7 +16,7 @@ type SpecialDaysEditorProps = {
 export default function SpecialDaysEditor({ semester, specialDays }: SpecialDaysEditorProps) {
   const period: Period = semester.period as Period
 
-  const [type, setType] = useState<SpecialDayType>("partial-exam-period")
+  const [type, setType] = useState<SpecialDayType>("no-class")
 
   return (
     <div className="flex flex-row item-stretch">
