@@ -40,7 +40,6 @@ export default async function CourseCalendar({ name, year, period }: CourseCalen
       courseSpecialDays = await dbSpecialDaysGetForSemester(year, period, course.id)
       groups = course.groups
       exams = await dbCourseGetExams(course.id)
-      console.log(exams)
     }
   }
 

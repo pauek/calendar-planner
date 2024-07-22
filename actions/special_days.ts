@@ -14,18 +14,14 @@ const revalidateCoursePath = async (courseId: number) => {
   const course = await dbCourseGetOrThrow(courseId);
   const path = `/${course.year}/${course.period}/${course.name}`;
   revalidatePath(path)
-  console.log("revalidated", path)
-
 }
 
 export async function actionSpecialDaySetForCourse(courseId: number, d: AltDate, type: SpecialDayType) {
-  console.log("set day ", courseId, d, type)
   await dbSpecialDaySet(d, type, courseId)
   revalidateCoursePath(courseId);
 }
 
 export async function actionSpecialDayRemoveForCourse(courseId: number, type: SpecialDayType) {
-  console.log("remove day", courseId, type)
   await dbSpecialDayDeleteAll(type, courseId);
   revalidateCoursePath(courseId);
 }

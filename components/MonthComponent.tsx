@@ -42,7 +42,6 @@ export default function MonthComponent({
       sortSpecialDayTypes(types)
     }
   }
-  console.log(special);
 
   const DateCell = ({ date }: { date: MaybeAltDate }) => {
     let border = ""

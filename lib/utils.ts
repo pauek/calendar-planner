@@ -33,7 +33,6 @@ export const equalSets = <T>(a: Set<T>, b: Set<T>) => {
     const d2 = setDifference(b, a)
     return d1.size == 0 && d2.size == 0
   } catch (e) {
-    console.log(a, b)
     console.error(e)
   }
 }
